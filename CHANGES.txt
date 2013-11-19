@@ -1,2 +1,5 @@
+0.0.2
+        - added 'under development' notice
+
 0.0.1
         - just start development
