@@ -6,6 +6,7 @@ bin/
 dist/
 lib/
 man/
+doc/
 local/
 include/
 *.egg-info/
