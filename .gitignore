@@ -18,7 +18,7 @@ pyvenv.cfg
 .python-version
 MANIFEST
 *.egg
-.travis.yml*
+.travis.yml.*
 
 doc/.buildinfo
 doc/.doctrees/
