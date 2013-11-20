@@ -47,4 +47,4 @@ TODO
 
 - relshellプロセス ===(thread)===> シェルオペレータ ===(fork)===> シェルコマンドプロセス という流れを作る(Queueもいるね)
 - shellstreaming/README.rst にあるような感じで，batchをop間でやりとりできるようにする
-- Batchはimmutableなんだから，排他制御のためにQueueを使ったりする必要は本来ないはず．tupleで十分
+- シェルプロセスは非同期でも扱いたい．そもそもpopenとかがそういうインターフェースだし．
