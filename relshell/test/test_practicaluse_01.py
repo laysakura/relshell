@@ -21,7 +21,6 @@ def test_output_batch_as_is():
         # 'cat < #IN_BATCH# > #OUT_BATCH#',  # stdin,stdoutでのバッチの扱いはデフォルト化してもいいと思う
         'cat',
         out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
-        terminator = 'EOF'  # 'SIGKILL', ...
     )
     in_batch  = _create_batch()
     out_batch = op.run(in_batches=[in_batch, ])   # daemonize=Falseなので，シェルプロセスの終了まで待つ

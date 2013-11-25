@@ -23,7 +23,7 @@ class ShellOperator(object):
         daemonize=False,
         cwd=None,
         env=None,
-        in_record_sep ='\n',
+        in_record_sep='\n',
         out_record_sep='\n',  # 何か図解してあげる．in_record_sepの方が入力Recordを文字列にする際のもので，out_record_sepの方が出力文字列をRecordにする際のもの
     ):
         # check
