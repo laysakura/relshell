@@ -70,7 +70,6 @@ class ShellOperator(object):
                     input_str = _input_str(in_batches[i])
                     process.stdin.write(input_str)
                     process.stdin.flush()
-                    process.stdin.close()   # daemonize=Trueのときはどうしよう
 
         def _output_str(process):
             process.stdout.flush()
@@ -85,6 +84,10 @@ class ShellOperator(object):
                 out_batch = Batch(tuple(out_recs))
             return out_batch
 
+        def _terminate(process):
+            if self._terminator == 'EOF':
+                process.stdin.close()   # daemonize=Trueのときはどうしよう
+
         if len(in_batches) != len(self._cmddict['in_batches_src']):
             raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in ShellOperator.__init__()' %
                                  (len(in_batches), len(self._cmddict['in_batches_src'])))
@@ -95,6 +98,8 @@ class ShellOperator(object):
         _batches_to_file()
         process = _start_process()
         _batches_to_stdin(process)
+        if not self._daemonize:
+            _terminate(process)
         process.wait()
         out_str = _output_str(process)
         out_batch = _out_str_to_batch(out_str)
