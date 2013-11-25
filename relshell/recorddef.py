@@ -58,6 +58,12 @@ class RecordDef(object):
         """
         return self._coldefs[key]
 
+    def __eq__(self, other):
+        return self._recdef == other._recdef
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     # Private functions
     def _set_coldefs(self):
         self._coldefs = []

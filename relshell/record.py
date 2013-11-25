@@ -55,6 +55,12 @@ class Record(object):
         self._cur_col += 1
         return col
 
+    def __eq__(self, other):
+        return self._rec == other._rec and self._recdef == other._recdef
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     # Private functions
     @staticmethod
     def _internal_repl(columns):
