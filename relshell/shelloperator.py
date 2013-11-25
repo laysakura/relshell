@@ -39,53 +39,65 @@ class ShellOperator(object):
         self._in_record_sep  = in_record_sep
         self._out_record_sep = out_record_sep
 
-    def run(self, in_batch):
+    def run(self, in_batches):
+        def _start_process():
+            return Popen(
+                shlex.split(self._cmddict['cmd_line']),
+                stdin  = PIPE if 'STDIN'  in [in_batch[0] for in_batch in self._cmddict['in_batches_src']] else None,
+                stdout = PIPE if 'STDOUT' == self._cmddict['out_batch_dest'] else None,
+                stderr = None,
+                cwd = self._cwd,
+                env = self._env,
+            )
+
+        def _input_str(in_batch):
+            input_str = ''
+            for i, record in enumerate(in_batch):
+                if i > 0: input_str += self._in_record_sep
+                input_str += record[0]  # 複雑なrecorddefに対応してない
+            return input_str
+
+        def _batches_to_file():
+            for i, in_src in enumerate(self._cmddict['in_batches_src']):
+                if in_src[0] == 'FILE':
+                    with open(in_src[1], 'w') as f:
+                        input_str = _input_str(in_batches[i])
+                        f.write(input_str)
+
+        def _batches_to_stdin(process):
+            for i, in_src in enumerate(self._cmddict['in_batches_src']):
+                if in_src[0] == 'STDIN':
+                    input_str = _input_str(in_batches[i])
+                    process.stdin.write(input_str)
+                    process.stdin.flush()
+                    process.stdin.close()   # daemonize=Trueのときはどうしよう
+
+        def _output_str(process):
+            process.stdout.flush()
+            output_str = process.stdout.read()
+            process.stdout.close()
+            return output_str
+
+        def _out_str_to_batch(out_str):
+            out_recs = []
+            for rec_str in out_str.split(self._out_record_sep):
+                out_recs.append(Record(self._out_recdef, rec_str))   # これも複雑なrecdefには対応できてない
+                out_batch = Batch(tuple(out_recs))
+            return out_batch
+
+        if len(in_batches) != len(self._cmddict['in_batches_src']):
+            raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in ShellOperator.__init__()' %
+                                 (len(in_batches), len(self._cmddict['in_batches_src'])))
+
         if self._daemonize:
             raise NotImplementedError
 
-        process = Popen(
-            shlex.split(self._cmddict['cmd_line']),
-            stdin  = PIPE if 'STDIN'  in self._cmddict['in_batches'] else None,
-            stdout = PIPE if 'STDOUT' == self._cmddict['out_batch']  else None,
-            stderr=None,  # これじゃあ上がってこない
-            cwd=self._cwd,
-            env=self._env,
-        )
-
-        assert('STDIN'  in self._cmddict['in_batches'] and
-               'STDOUT' == self._cmddict['out_batch'])  # ちょっとこれ以外の実装はまだ
-
-        input_str = r''
-        for i, record in enumerate(in_batch):
-            if i > 0: input_str += self._in_record_sep
-            input_str += record[0]  # 複雑なrecorddefに対応してない
-
-        try:
-            process.stdin.write(input_str)
-        except IOError as e:
-            if e.errno == errno.EPIPE or e.errno == errno.EINVAL:
-                # Stop loop on "Invalid pipe" or "Invalid argument".
-                # No sense in continuing with broken pipe.
-                pass
-            else:
-                # Raise any other error.
-                raise
-
-        process.stdin.close()  # flush. EOFも送れてる??
+        _batches_to_file()
+        process = _start_process()
+        _batches_to_stdin(process)
         process.wait()
-
-        process.stdout.flush()
-        output_str = process.stdout.read()
-        process.stdout.close() # flush
-
-        out_recs = []
-        for rec_str in output_str.split(self._out_record_sep):
-            out_recs.append(Record(self._out_recdef, rec_str))   # これも複雑なrecdefには対応できてない
-        out_batch = Batch(tuple(out_recs))
-
-        print in_batch
-        print out_batch
-
+        out_str = _output_str(process)
+        out_batch = _out_str_to_batch(out_str)
         return out_batch
 
 

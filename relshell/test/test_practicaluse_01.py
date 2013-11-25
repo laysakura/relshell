@@ -24,7 +24,7 @@ def test_output_batch_as_is():
         terminator = 'EOF'  # 'SIGKILL', ...
     )
     in_batch  = _create_batch()
-    out_batch = op.run(in_batch=in_batch)   # daemonize=Falseなので，シェルプロセスの終了まで待つ
+    out_batch = op.run(in_batches=[in_batch, ])   # daemonize=Falseなので，シェルプロセスの終了まで待つ
     eq_(out_batch, in_batch)
 
 
@@ -72,8 +72,8 @@ def test_output_batch_as_is():
 #             ''', re.VERBOSE | re.MULTILINE)
 #         }
 #     )
-#     out_batch = op.run(in_batch=batch0)
-#     batch2 = op.run(in_batch=batch1)
+#     out_batch = op.run(in_batches=[batch0, ])
+#     batch2 = op.run(in_batches=[batch1, ])
 #     eq_(batch2, batch0)
 
 
@@ -86,7 +86,7 @@ def test_output_batch_as_is():
 #     )
 #     for i in xrange(10):
 #         in_batch  = _create_batch()
-#         out_batch = op.run(in_batch=in_batch)   # daemonize=Trueなので，シェルプロセスが走り続けていても，
+#         out_batch = op.run(in_batches=[in_batch, ])   # daemonize=Trueなので，シェルプロセスが走り続けていても，
 #                                                 # 1個のin_batchについての処理が終わればrun呼び出しは終わる
 #                                                 # (1個のin_batchについて同期呼び出し)
 #                                                 # ただし，「どこまでが1つのoutput_batchか」を判定する必要はある．
