@@ -48,3 +48,5 @@ TODO
 - relshellプロセス ===(thread)===> シェルオペレータ ===(fork)===> シェルコマンドプロセス という流れを作る(Queueもいるね)
 - shellstreaming/README.rst にあるような感じで，batchをop間でやりとりできるようにする
 - シェルプロセスは非同期でも扱いたい．そもそもpopenとかがそういうインターフェースだし．
+- 'cat < IN_BATCH' とかの便利記法にも対応して，それより上のレイヤ(DSL)で使えるようにする．
+  そうしないと，'diff IN_BATCH0 IN_BATCH1' とかのときにどちらにせよ破綻する．
