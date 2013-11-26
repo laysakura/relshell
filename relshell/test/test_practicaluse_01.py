@@ -22,7 +22,7 @@ def test_output_batch_as_is():
         out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
     )
     in_batch  = _create_batch()
-    out_batch = op.run(in_batches=[in_batch, ])
+    out_batch = op.run(in_batches=(in_batch, ))
     eq_(out_batch, in_batch)
 
 
@@ -37,7 +37,7 @@ def test_output_batch_as_is():
 #     ))
 
 #     op = ShellOperator(
-#         'diff #IN_BATCH0# #IN_BATCH1# > #OUT_BATCH#'
+#         'diff IN_BATCH0 IN_BATCH1 > OUT_BATCH',
 #         out_record_def=RecordDef([
 #             {'name': 'position',
 #              'type': 'STRING',
@@ -70,21 +70,21 @@ def test_output_batch_as_is():
 #             ''', re.VERBOSE | re.MULTILINE)
 #         }
 #     )
-#     out_batch = op.run(in_batches=[batch0, ])
-#     batch2 = op.run(in_batches=[batch1, ])
+#     out_batch = op.run(in_batches=(batch0, ))
+#     batch2 = op.run(in_batches=(batch1, ))
 #     eq_(batch2, batch0)
 
 
 # def test_daemonized_process():
 #     op = ShellOperator(
-#         'cat < #IN_BATCH# > #OUT_BATCH#',
+#         'cat < IN_BATCH0 > OUT_BATCH',
 #         out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
 #         terminator     = Terminator.EOF  # Terminator.SIGKILL, ...
 #         daemonize      = True,  # op.kill() を明示的に呼び出すまでterminatorの実行がなされない
 #     )
 #     for i in xrange(10):
 #         in_batch  = _create_batch()
-#         out_batch = op.run(in_batches=[in_batch, ])   # daemonize=Trueなので，シェルプロセスが走り続けていても，
+#         out_batch = op.run(in_batches=(in_batch, ))   # daemonize=Trueなので，シェルプロセスが走り続けていても，
 #                                                 # 1個のin_batchについての処理が終わればrun呼び出しは終わる
 #                                                 # (1個のin_batchについて同期呼び出し)
 #                                                 # ただし，「どこまでが1つのoutput_batchか」を判定する必要はある．
