@@ -91,7 +91,7 @@ def test_parse_usage():
 
 def test_parse_diff():
     cmddict = parse('diff IN_BATCH0 IN_BATCH1 > OUT_BATCH')
-    eq_(cmddict['cmd_array'][0], 'diff')
-    eq_(cmddict['in_batches_src'][0][0], 'FILE')
-    eq_(cmddict['in_batches_src'][1][0], 'FILE')
-    eq_(cmddict['out_batch_dest'], ('STDOUT', ))
+    eq_(cmddict['cmd_array'][0]         , 'diff')
+    eq_(cmddict['in_batches_src'][0][0] , 'FILE')
+    eq_(cmddict['in_batches_src'][1][0] , 'FILE')
+    eq_(cmddict['out_batch_dest']       , ('STDOUT', ))

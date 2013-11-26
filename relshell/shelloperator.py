@@ -29,6 +29,7 @@ class ShellOperator(object):
         _chk_terminator(terminator)
 
         #set
+        self._orig_cmd   = cmd
         self._cmddict    = parse(cmd)
         self._out_recdef = out_record_def
         self._terminator = terminator
@@ -39,11 +40,16 @@ class ShellOperator(object):
         self._out_record_sep = out_record_sep
 
     def run(self, in_batches):
+        """Run shell operator to eat `in_batches`
+
+        :param in_batches: 
+        :type in_batches:  `tuple`
+        """
         def _start_process():
             return Popen(
                 self._cmddict['cmd_array'],
-                stdin  = PIPE if 'STDIN'  in [in_batch[0] for in_batch in self._cmddict['in_batches_src']] else None,
-                stdout = PIPE if 'STDOUT' == self._cmddict['out_batch_dest'] else None,
+                stdin  = PIPE if 'STDIN'  in [src[0] for src in self._cmddict['in_batches_src']] else None,
+                stdout = PIPE if 'STDOUT' == self._cmddict['out_batch_dest'][0]                  else None,
                 stderr = None,
                 cwd = self._cwd,
                 env = self._env,
@@ -88,8 +94,8 @@ class ShellOperator(object):
                 process.stdin.close()   # daemonize=Trueのときはどうしよう
 
         if len(in_batches) != len(self._cmddict['in_batches_src']):
-            raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in ShellOperator.__init__()' %
-                                 (len(in_batches), len(self._cmddict['in_batches_src'])))
+            raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:\n$ %s' %
+                                 (len(in_batches), len(self._cmddict['in_batches_src']), self._orig_cmd))
 
         if self._daemonize:
             raise NotImplementedError
