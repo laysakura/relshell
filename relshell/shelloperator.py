@@ -5,7 +5,6 @@
 
     :synopsis: Provides `ShellOperator`
 """
-import shlex
 from subprocess import Popen, PIPE
 from relshell.record import Record
 from relshell.batch import Batch
@@ -42,7 +41,7 @@ class ShellOperator(object):
     def run(self, in_batches):
         def _start_process():
             return Popen(
-                shlex.split(self._cmddict['cmd_line']),
+                self._cmddict['cmd_array'],
                 stdin  = PIPE if 'STDIN'  in [in_batch[0] for in_batch in self._cmddict['in_batches_src']] else None,
                 stdout = PIPE if 'STDOUT' == self._cmddict['out_batch_dest'] else None,
                 stderr = None,

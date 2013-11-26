@@ -18,12 +18,21 @@ def _create_batch():
 
 def test_output_batch_as_is():
     op = ShellOperator(
-        # 'cat < #IN_BATCH# > #OUT_BATCH#',  # stdin,stdoutでのバッチの扱いはデフォルト化してもいいと思う
         'cat',
         out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
     )
     in_batch  = _create_batch()
-    out_batch = op.run(in_batches=[in_batch, ])   # daemonize=Falseなので，シェルプロセスの終了まで待つ
+    out_batch = op.run(in_batches=[in_batch, ])
+    eq_(out_batch, in_batch)
+
+
+def test_output_batch_as_is_batch_kw():
+    op = ShellOperator(
+        'cat < IN_BATCH > OUT_BATCH',
+        out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+    )
+    in_batch  = _create_batch()
+    out_batch = op.run(in_batches=[in_batch, ])
     eq_(out_batch, in_batch)
 
 
