@@ -56,8 +56,8 @@ class ShellOperator(object):
         # wait process & get its output
         if using_stdin:
             ShellOperator._close_stdin(process)  # stdin has to recieve EOF explicitly (unlike file)
-
         process.wait()  # [todo] - check if process has successfully exited
+        ShellOperator._clean_in_files(self._cmddict['in_batches_src'])
         if self._cmddict['out_batch_dest'][0] == 'STDOUT':
             out_str   = ShellOperator._output_str_stdout(process)
             out_batch = ShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
@@ -126,3 +126,10 @@ class ShellOperator(object):
     @staticmethod
     def _close_stdin(process):
         process.stdin.close()
+
+    @staticmethod
+    def _clean_in_files(in_batches_src):
+        for in_src in in_batches_src:
+            if in_src[0] == 'FILE':
+                (fd, path) = in_src[1]
+                remove(path)
