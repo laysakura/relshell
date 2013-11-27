@@ -49,35 +49,20 @@ def _parse_in_batches_src(cmd_array):
         Returned `cmd_array` drops IN_BATCH related tokens.
     :raises:  `IndexError` if IN_BATCHes don't have sequential ID starting from 0
     """
-    res_cmd_array = cmd_array[:]
-    # creating dict to store IN_BATCH0 - IN_BATCHx out-of-order
-    in_batches_find_dict = {}
-    for i, tok in enumerate(cmd_array):
-        mat = in_batches_pat.match(tok)
-        if mat:
-            batch_idx = int(mat.group(1))
-            if batch_idx in in_batches_find_dict:
-                raise IndexError(
-                    'IN_BATCH%d is used multiple times in command below, while IN_BATCH0 - IN_BATCH%d must be used:\n$ %s' %
-                    (batch_idx, len(in_batches_find_dict) - 1, ' '.join(cmd_array)))
-
-            if i > 0 and cmd_array[i - 1] == '<':  # e.g. `< IN_BATCH0`
-                in_batches_find_dict[batch_idx] = ('STDIN', )
-                del res_cmd_array[i], res_cmd_array[i - 1]
-
-            else:  # IN_BATCHx is FILE
-                tmpfile = mkstemp(prefix='relshell-', suffix='.batch')  # [todo] - Use memory file system for performance
-                in_batches_find_dict[batch_idx] = ('FILE', tmpfile)
-                res_cmd_array[i]                = tmpfile[1]
-
-    # fetching IN_BATCH0 - IN_BATCHx from `in_batches_find_dict` and creating `res_in_batches_tup` to return
+    res_cmd_array      = cmd_array[:]
     res_in_batches_tup = []
-    for batch_idx in range(len(in_batches_find_dict)):
-        try:
-            res_in_batches_tup.append(in_batches_find_dict[batch_idx])
-        except KeyError:
-            raise IndexError('IN_BATCH%d is not found in command below, while IN_BATCH0 - IN_BATCH%d must be used:\n$ %s' %
-                             (batch_idx, len(in_batches_find_dict) - 1, ' '.join(cmd_array)))
+
+    in_batches_cmdidx  = _batches_id_cmdidx(cmd_array)
+    for batch_id, cmdidx in enumerate(in_batches_cmdidx):
+        if cmdidx > 0 and cmd_array[cmdidx - 1] == '<':  # e.g. `< IN_BATCH0`
+            res_in_batches_tup.append(('STDIN', ))
+            del res_cmd_array[cmdidx], res_cmd_array[cmdidx - 1]
+
+        else:  # IN_BATCHx is FILE
+            tmpfile = mkstemp(prefix='relshell-', suffix='.batch')  # [todo] - Use memory file system for performance
+            res_in_batches_tup.append(('FILE', tmpfile))
+            res_cmd_array[cmdidx] = tmpfile[1]
+
     return (res_cmd_array, tuple(res_in_batches_tup))
 
 
@@ -110,3 +95,32 @@ def _parse_out_batch_dest(cmd_array):
                 res_cmd_array[i]  = tmpfile[1]
 
     return (res_cmd_array, tuple(res_out_batch_tup))
+
+
+def _batches_id_cmdidx(cmd_array):
+    """Raise `IndexError` if IN_BATCH0 - IN_BATCHx is not used sequentially in `cmd_array`
+
+    :returns: (IN_BATCH0's cmdidx, IN_BATCH1's cmdidx, ...)
+        $ cat a.txt IN_BATCH1 IN_BATCH0 b.txt c.txt IN_BATCH2 => (3, 2, 5)
+    """
+    in_batches_cmdidx_dict = {}
+    for cmdidx, tok in enumerate(cmd_array):
+        mat = in_batches_pat.match(tok)
+        if mat:
+            batch_idx = int(mat.group(1))
+            if batch_idx in in_batches_cmdidx_dict:
+                raise IndexError(
+                    'IN_BATCH%d is used multiple times in command below, while IN_BATCH0 - IN_BATCH%d must be used:\n$ %s' %
+                    (batch_idx, len(in_batches_cmdidx_dict) - 1, ' '.join(cmd_array)))
+            in_batches_cmdidx_dict[batch_idx] = cmdidx
+
+    in_batches_cmdidx = []
+    for batch_idx in range(len(in_batches_cmdidx_dict)):
+        try:
+            cmdidx = in_batches_cmdidx_dict[batch_idx]
+            in_batches_cmdidx.append(cmdidx)
+        except KeyError:
+            raise IndexError('IN_BATCH%d is not found in command below, while IN_BATCH0 - IN_BATCH%d must be used:\n$ %s' %
+                             (batch_idx, len(in_batches_cmdidx_dict) - 1, ' '.join(cmd_array)))
+
+    return tuple(in_batches_cmdidx)

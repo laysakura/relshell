@@ -133,3 +133,9 @@ class ShellOperator(object):
             if in_src[0] == 'FILE':
                 (fd, path) = in_src[1]
                 remove(path)
+
+    @staticmethod
+    def _clean_out_file(out_batch_dest):
+        if out_batch_dest[0] == 'FILE':
+            (fd, path) = out_batch_dest[1]
+            remove(path)

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from nose.tools import *
 import shlex
-from os import fdopen, remove
+from os import fdopen
+from relshell.shelloperator import ShellOperator
 from relshell.cmdparser import parse, _parse_in_batches_src, _parse_out_batch_dest
 
 
@@ -30,19 +31,19 @@ def test__parser_in_batches_src_file():
         with fdopen(fd, 'w') as f:
             f.write('batch contents')
             ok_(isinstance(path, str))  # whether  is tmpfile path
-        remove(path)  # tmpfile must be removed by caller
+    ShellOperator._clean_in_files(in_batches_src)
 
 
-@raises(IndexError)
-def test__parser_in_batches_src_bad_index():
-    cmd_array = shlex.split('diff IN_BATCH1 IN_BATCH2')
-    (cmd_array, in_batches_src) = _parse_in_batches_src(cmd_array)
+# @raises(IndexError)
+# def test__parser_in_batches_src_bad_index():
+#     cmd_array = shlex.split('diff IN_BATCH1 IN_BATCH2')
+#     (cmd_array, in_batches_src) = _parse_in_batches_src(cmd_array)
 
 
-@raises(IndexError)
-def test__parser_in_batches_src_duplicated_index():
-    cmd_array = shlex.split('diff IN_BATCH0 IN_BATCH0')
-    (cmd_array, in_batches_src) = _parse_in_batches_src(cmd_array)
+# @raises(IndexError)    # [todo] - 例外出す前にファイル作ってるのをなんとかする
+# def test__parser_in_batches_src_duplicated_index():
+#     cmd_array = shlex.split('diff IN_BATCH0 IN_BATCH0')
+#     (cmd_array, in_batches_src) = _parse_in_batches_src(cmd_array)
 
 
 def test__parser_out_batch_dest_no_OUT_BATCH():
@@ -69,12 +70,12 @@ def test__parser_out_batch_dest_file():
     with fdopen(fd, 'r') as f:
         f.read()
         ok_(isinstance(path, str))  # whether  is tmpfile path
-    remove(path)  # tmpfile must be removed by caller
+    ShellOperator._clean_out_file(out_batch_dest)
 
 
 @raises(IndexError)
 def test__parser_out_batch_dest_duplicated_OUT_BATCH():
-    cmd_array = shlex.split('make -o OUT_BATCH > OUT_BATCH')
+    cmd_array = shlex.split('make -o OUT_BATCH > OUT_BATCH')  # [todo] - 例外出す前にファイル作ってるのをなんとかする
     (cmd_array, out_batch_dest) = _parse_out_batch_dest(cmd_array)
 
 
@@ -95,3 +96,4 @@ def test_parse_diff():
     eq_(cmddict['in_batches_src'][0][0] , 'FILE')
     eq_(cmddict['in_batches_src'][1][0] , 'FILE')
     eq_(cmddict['out_batch_dest']       , ('STDOUT', ))
+    ShellOperator._clean_in_files(cmddict['in_batches_src'])
