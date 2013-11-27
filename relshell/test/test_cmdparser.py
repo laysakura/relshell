@@ -34,16 +34,16 @@ def test__parser_in_batches_src_file():
     ShellOperator._clean_in_files(in_batches_src)
 
 
-# @raises(IndexError)
-# def test__parser_in_batches_src_bad_index():
-#     cmd_array = shlex.split('diff IN_BATCH1 IN_BATCH2')
-#     (cmd_array, in_batches_src) = _parse_in_batches_src(cmd_array)
+@raises(IndexError)
+def test__parser_in_batches_src_bad_index():
+    cmd_array = shlex.split('diff IN_BATCH1 IN_BATCH2')
+    (cmd_array, in_batches_src) = _parse_in_batches_src(cmd_array)
 
 
-# @raises(IndexError)    # [todo] - 例外出す前にファイル作ってるのをなんとかする
-# def test__parser_in_batches_src_duplicated_index():
-#     cmd_array = shlex.split('diff IN_BATCH0 IN_BATCH0')
-#     (cmd_array, in_batches_src) = _parse_in_batches_src(cmd_array)
+@raises(IndexError)
+def test__parser_in_batches_src_duplicated_index():
+    cmd_array = shlex.split('diff IN_BATCH0 IN_BATCH0')
+    (cmd_array, in_batches_src) = _parse_in_batches_src(cmd_array)
 
 
 def test__parser_out_batch_dest_no_OUT_BATCH():
@@ -75,7 +75,7 @@ def test__parser_out_batch_dest_file():
 
 @raises(IndexError)
 def test__parser_out_batch_dest_duplicated_OUT_BATCH():
-    cmd_array = shlex.split('make -o OUT_BATCH > OUT_BATCH')  # [todo] - 例外出す前にファイル作ってるのをなんとかする
+    cmd_array = shlex.split('make -o OUT_BATCH > OUT_BATCH')
     (cmd_array, out_batch_dest) = _parse_out_batch_dest(cmd_array)
 
 

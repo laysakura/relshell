@@ -52,7 +52,7 @@ def _parse_in_batches_src(cmd_array):
     res_cmd_array      = cmd_array[:]
     res_in_batches_tup = []
 
-    in_batches_cmdidx  = _batches_id_cmdidx(cmd_array)
+    in_batches_cmdidx  = _in_batches_cmdidx(cmd_array)
     for batch_id, cmdidx in enumerate(in_batches_cmdidx):
         if cmdidx > 0 and cmd_array[cmdidx - 1] == '<':  # e.g. `< IN_BATCH0`
             res_in_batches_tup.append(('STDIN', ))
@@ -77,27 +77,24 @@ def _parse_out_batch_dest(cmd_array):
     """
     res_cmd_array     = cmd_array[:]
     res_out_batch_tup = ()
-    for i, tok in enumerate(cmd_array):
-        mat = out_batch_pat.match(tok)
-        if mat:
-            if res_out_batch_tup != ():
-                raise IndexError(
-                    'OUT_BATCH is used multiple times in command below:\n$ %s' %
-                    (' '.join(cmd_array)))
 
-            if i > 0 and cmd_array[i - 1] == '>':  # e.g. `> OUT_BATCH`
-                res_out_batch_tup = ('STDOUT', )
-                del res_cmd_array[i], res_cmd_array[i - 1]
+    out_batch_cmdidx = _out_batch_cmdidx(cmd_array)
+    if out_batch_cmdidx is None:
+        return (res_cmd_array, res_out_batch_tup)
 
-            else:  # OUT_BATCH is FILE
-                tmpfile = mkstemp(prefix='relshell-', suffix='.batch')
-                res_out_batch_tup = ('FILE', tmpfile)
-                res_cmd_array[i]  = tmpfile[1]
+    if out_batch_cmdidx > 0 and cmd_array[out_batch_cmdidx - 1] == '>':  # e.g. `> OUT_BATCH`
+        res_out_batch_tup = ('STDOUT', )
+        del res_cmd_array[out_batch_cmdidx], res_cmd_array[out_batch_cmdidx - 1]
+
+    else:  # OUT_BATCH is FILE
+        tmpfile = mkstemp(prefix='relshell-', suffix='.batch')
+        res_out_batch_tup = ('FILE', tmpfile)
+        res_cmd_array[out_batch_cmdidx]  = tmpfile[1]
 
     return (res_cmd_array, tuple(res_out_batch_tup))
 
 
-def _batches_id_cmdidx(cmd_array):
+def _in_batches_cmdidx(cmd_array):
     """Raise `IndexError` if IN_BATCH0 - IN_BATCHx is not used sequentially in `cmd_array`
 
     :returns: (IN_BATCH0's cmdidx, IN_BATCH1's cmdidx, ...)
@@ -124,3 +121,21 @@ def _batches_id_cmdidx(cmd_array):
                              (batch_idx, len(in_batches_cmdidx_dict) - 1, ' '.join(cmd_array)))
 
     return tuple(in_batches_cmdidx)
+
+
+def _out_batch_cmdidx(cmd_array):
+    """Raise `IndexError` if OUT_BATCH is used multiple time
+
+    :returns: OUT_BATCH cmdidx (None if OUT_BATCH is not in `cmd_array`)
+        $ cat a.txt > OUT_BATCH => 3
+    """
+    out_batch_cmdidx = None
+    for cmdidx, tok in enumerate(cmd_array):
+        mat = out_batch_pat.match(tok)
+        if mat:
+            if out_batch_cmdidx:
+                raise IndexError(
+                    'OUT_BATCH is used multiple times in command below:\n$ %s' %
+                    (' '.join(cmd_array)))
+            out_batch_cmdidx = cmdidx
+    return out_batch_cmdidx
