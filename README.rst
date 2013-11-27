@@ -50,3 +50,8 @@ TODO
 - シェルプロセスは非同期でも扱いたい．そもそもpopenとかがそういうインターフェースだし．
 - 'cat < IN_BATCH' とかの便利記法にも対応して，それより上のレイヤ(DSL)で使えるようにする．
   そうしないと，'diff IN_BATCH0 IN_BATCH1' とかのときにどちらにせよ破綻する．
+
+- daemonizeできる条件
+  - in_batchをstdinからとり，out_batchを(stdout|file)に出す
+  - 「in_batch_xに対する出力分out_batch_xがここまでですよ」と定義できる(例えば，空行はout_batch_xの終わりですよ，とか)
+    - enjuには使える
