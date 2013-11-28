@@ -26,12 +26,7 @@ def test_daemonized_process():
     prev_pid = None
     for i in xrange(10):
         in_batch  = _create_batch()
-        out_batch = op.run(in_batches=(in_batch, ))   # [fix] - daemonize=Trueなので，シェルプロセスが走り続けていても，
-                                                      # [fix] - 1個のin_batchについての処理が終わればrun呼び出しは終わる
-                                                      # [fix] - (1個のin_batchについて同期呼び出し)
-                                                      # [fix] - ただし，「どこまでが1つのoutput_batchか」を判定する必要はある．
-                                                      # [fix] - 「空行が1つ出たら」とか，「何ms新しい出力がなかったら」とか?
-        print(out_batch)
+        out_batch = op.run(in_batches=(in_batch, ))
         eq_(out_batch, in_batch)
 
         cur_pid = op.getpid()

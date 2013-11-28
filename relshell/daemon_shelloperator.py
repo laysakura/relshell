@@ -71,7 +71,6 @@ class DaemonShellOperator(ShellOperator):
 
         # wait for batch separator & get its output
         # ここで，stdoutの結果をpollして，文字列の終わりが`batch_done_output`に一致しているかどうかを見る
-        print('start!!!!!!')
         import time
         out_str = ''  # [fix] - addition to str
         while True:
