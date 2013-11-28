@@ -24,10 +24,10 @@ class BatchFromFile(BatchToFromFile):
     def is_stdout(self):
         return self._type == 'STDOUT'
 
-    def read_stdout(self, stdout, batch_str):
-        stdout.flush()
-        stdout.read()  # [fix] - arg is needed not for waiting EOF
+    def read_stdout(self, stdout):
         self._stdout = stdout
+        stdout.flush()
+        return stdout.read()  # [fix] - arg is needed not for waiting EOF
 
     def read_tmpfile(self):
         (fd, path) = self._tmpfile

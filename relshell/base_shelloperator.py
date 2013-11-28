@@ -53,11 +53,11 @@ class BaseShellOperator(object):
         pass
 
     @staticmethod
-    def _start_process(cmd_array, batch_to_file_s, out_batch_src, cwd, env):
+    def _start_process(cmd_array, batch_to_file_s, batch_from_file, cwd, env):
         return Popen(
             cmd_array,
-            stdin  = PIPE if len([src for src in batch_to_file_s if src.from_stdin()]) else None,
-            stdout = PIPE if 'STDOUT' == out_batch_src[0]                            else None,
+            stdin  = PIPE if len([b2f for b2f in batch_to_file_s if b2f.is_stdin()]) else None,
+            stdout = PIPE if batch_from_file.is_stdout() else None,
             stderr = None,
             cwd = cwd,
             env = env,
@@ -74,27 +74,24 @@ class BaseShellOperator(object):
     @staticmethod
     def _batches_to_file(in_record_sep, in_batches, batch_to_file_s):
         """Create files to store in-batches contents (if necessary)"""
-        for i, src in enumerate(batch_to_file_s):
-            if src.from_tmpfile():
+        for i, b2f in enumerate(batch_to_file_s):
+            if b2f.is_tmpfile():
                 input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep)
-                src.write_tmpfile(input_str)
+                b2f.write_tmpfile(input_str)
 
     @staticmethod
     def _batch_to_stdin(process, in_record_sep, in_batches, batch_to_file_s):
         """Write in-batch contents to `process` 's stdin (if necessary)
         """
-        for i, src in enumerate(batch_to_file_s):
-            if src.from_stdin():
+        for i, b2f in enumerate(batch_to_file_s):
+            if b2f.is_stdin():
                 input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep)
-                src.write_stdin(process, input_str)
+                b2f.write_stdin(process.stdin, input_str)
                 break  # at most 1 batch_to_file can be from stdin
 
     @staticmethod
-    def _output_str_stdout(process):
-        process.stdout.flush()
-        output_str = process.stdout.read()
-        process.stdout.close()  # [fix] - 同期的な呼び出しならcloseしてもいいけど，daemonを考えるならcloseしないノリのメソッドにしたい
-        return output_str
+    def _output_str_stdout(batch_from_file, process):
+        return batch_from_file.read_stdout(process.stdout)
 
     @staticmethod
     def _out_str_to_batch(out_str, out_recdef, out_record_sep):
