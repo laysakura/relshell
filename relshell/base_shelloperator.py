@@ -58,7 +58,7 @@ class BaseShellOperator(object):
     def _start_process(cmd_array, in_batches_src, out_batch_dest, cwd, env):
         return Popen(
             cmd_array,
-            stdin  = PIPE if 'STDIN'  in [src[0] for src in in_batches_src] else None,
+            stdin  = PIPE if 'STDIN'  in [src[0] for src in in_batches_src] else None,  # [fix] - cmdparserと密結合すぎる
             stdout = PIPE if 'STDOUT' == out_batch_dest[0]                  else None,
             stderr = None,
             cwd = cwd,

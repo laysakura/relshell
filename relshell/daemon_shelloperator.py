@@ -105,8 +105,8 @@ class DaemonShellOperator(BaseShellOperator):
         #     raise NotImplementedError
 
     def kill(self):
-        #...
+        BaseShellOperator._close_stdin(self._process)
         self._process = None
 
     def getpid(self):
-        return self._process.pid
+        return self._process.pid if self._process else None

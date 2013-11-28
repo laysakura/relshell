@@ -23,7 +23,8 @@ def test_daemonized_process():
         in_batch_sep      = 'BATCH_SEPARATOR\n',
         batch_done_output = 'BATCH_SEPARATOR\n',
     )
-    prev_pid = None
+    prev_pid = op.getpid()
+    ok_(prev_pid is None)
     for i in xrange(10):
         in_batch  = _create_batch()
         out_batch = op.run(in_batches=(in_batch, ))
@@ -38,3 +39,4 @@ def test_daemonized_process():
                # [todo] - Possible ways are
                # [todo] - 1. `killall -9` in ShellOperator.__del__() w/ some warnings to user
                # [todo] - 2. `with` syntax
+    ok_(op.getpid() is None)
