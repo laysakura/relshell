@@ -27,11 +27,11 @@ def test_batch_command_input_file():
     assert_true(batcmd.batch_to_file_s[0].is_tmpfile())
     assert_true(batcmd.batch_to_file_s[1].is_tmpfile())
 
-    for src in batcmd.batch_to_file_s:
-        src.write_tmpfile('some batch contents')
+    for b2f in batcmd.batch_to_file_s:
+        b2f.write_tmpfile('some batch contents')
 
-    for src in batcmd.batch_to_file_s:
-        src.finish()
+    for b2f in batcmd.batch_to_file_s:
+        b2f.finish()
 
 
 @raises(IndexError)
