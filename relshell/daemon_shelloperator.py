@@ -22,8 +22,7 @@ class DaemonShellOperator(BaseShellOperator):
 
     """
 
-    def __init__(  # [fix] - how to be in-sync w/ parameters of ShellOperator.__init__
-                   # [fix] - (when new parameters are added to ShellOperator.__init__)?
+    def __init__(
         self,
 
         # non-kw & common w/ BaseShellOperator param
