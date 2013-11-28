@@ -16,29 +16,30 @@ def _create_batch():
     ))
 
 
-# def test_daemonized_process():
-#     op = DaemonShellOperator(
-#         'sort < IN_BATCH0 > OUT_BATCH',
-#         out_record_def    = RecordDef([{'name': 'text', 'type': 'STRING'}]),
-#         in_batch_sep      = '~~~LAST_ENTITY\n',   # `~` is large in ASCII code
-#         batch_done_output = '~~~LAST_ENTITY\n',
-#     )
-#     prev_pid = None
-#     for i in xrange(10):
-#         in_batch  = _create_batch()
-#         out_batch = op.run(in_batches=(in_batch, ))   # [fix] - daemonize=Trueなので，シェルプロセスが走り続けていても，
-#                                                       # [fix] - 1個のin_batchについての処理が終わればrun呼び出しは終わる
-#                                                       # [fix] - (1個のin_batchについて同期呼び出し)
-#                                                       # [fix] - ただし，「どこまでが1つのoutput_batchか」を判定する必要はある．
-#                                                       # [fix] - 「空行が1つ出たら」とか，「何ms新しい出力がなかったら」とか?
-#         eq_(out_batch, in_batch)
+def test_daemonized_process():
+    op = DaemonShellOperator(
+        'cat < IN_BATCH0 > OUT_BATCH',
+        out_record_def    = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        in_batch_sep      = 'BATCH_SEPARATOR\n',
+        batch_done_output = 'BATCH_SEPARATOR\n',
+    )
+    prev_pid = None
+    for i in xrange(10):
+        in_batch  = _create_batch()
+        out_batch = op.run(in_batches=(in_batch, ))   # [fix] - daemonize=Trueなので，シェルプロセスが走り続けていても，
+                                                      # [fix] - 1個のin_batchについての処理が終わればrun呼び出しは終わる
+                                                      # [fix] - (1個のin_batchについて同期呼び出し)
+                                                      # [fix] - ただし，「どこまでが1つのoutput_batchか」を判定する必要はある．
+                                                      # [fix] - 「空行が1つ出たら」とか，「何ms新しい出力がなかったら」とか?
+        print(out_batch)
+        eq_(out_batch, in_batch)
 
-#         cur_pid = op.getpid()
-#         if prev_pid:
-#             eq_(cur_pid, prev_pid)  # instanciated process does not die during for loop
-#         prev_pid = op.getpid()
+        cur_pid = op.getpid()
+        if prev_pid:
+            eq_(cur_pid, prev_pid)  # instanciated process does not die during for loop
+        prev_pid = op.getpid()
 
-#     op.kill()  # [todo] - Calling kill() can be easily forgot.
-#                # [todo] - Possible ways are
-#                # [todo] - 1. `killall -9` in ShellOperator.__del__() w/ some warnings to user
-#                # [todo] - 2. `with` syntax
+    op.kill()  # [todo] - Calling kill() can be easily forgot.
+               # [todo] - Possible ways are
+               # [todo] - 1. `killall -9` in ShellOperator.__del__() w/ some warnings to user
+               # [todo] - 2. `with` syntax

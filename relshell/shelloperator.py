@@ -91,8 +91,8 @@ class ShellOperator(object):
     def _input_str(in_batch, in_record_sep):
         input_str = ''
         for i, record in enumerate(in_batch):
-            if i > 0: input_str += in_record_sep
-            input_str += record[0]  # 複雑なrecorddefに対応してない
+            input_str += record[0]  # [fix] - 複雑なrecorddefに対応してない
+            input_str += in_record_sep   # [fix] - str is immutable, so addition is bad idea
         return input_str
 
     @staticmethod
@@ -123,7 +123,7 @@ class ShellOperator(object):
     def _output_str_stdout(process):
         process.stdout.flush()
         output_str = process.stdout.read()
-        process.stdout.close()
+        process.stdout.close()  # [fix] - 同期的な呼び出しならcloseしてもいいけど，daemonを考えるならcloseしないノリのメソッドにしたい
         return output_str
 
     @staticmethod
