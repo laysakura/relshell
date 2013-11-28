@@ -44,11 +44,9 @@ def test_batch_command_duplicated_input_index():
     BatchCommand('diff IN_BATCH0 IN_BATCH0')
 
 
-# def test_batch_command_no_OUT_BATCH():
-#     cmd_array = shlex.split('cat')
-#     (cmd_array, batch_from_file) = _parse_batch_from_file(cmd_array)
-#     eq_(' '.join(cmd_array), 'cat')
-#     eq_(batch_from_file, ())
+def test_batch_command_no_OUT_BATCH():
+    batcmd = BatchCommand('cat')
+    ok_(batcmd.batch_from_file is None)
 
 
 # def test_batch_command_stdout():
