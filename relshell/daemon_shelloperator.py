@@ -6,34 +6,40 @@
     :synopsis: Provides `DaemonShellOperator`
 """
 import re
-from relshell.shelloperator import ShellOperator
+from relshell.base_shelloperator import BaseShellOperator
 
 
-class DaemonShellOperator(ShellOperator):
+class DaemonShellOperator(BaseShellOperator):
     """DaemonShellOperator"""
 
     def __init__(  # [fix] - how to be in-sync w/ parameters of ShellOperator.__init__
                    # [fix] - (when new parameters are added to ShellOperator.__init__)?
         self,
-        cmd,
 
+        # non-kw & common w/ BaseShellOperator param
+        cmd,
+        out_record_def,
+
+        # non-kw & original param
         in_batch_sep,
         batch_done_output,      # バッチの終わりに in_batch_sep をあえて入れさせて，
                                 # それに対するprocessの出力をみてやり，バッチ処理が終わったかを判定
                                 # (enjuの場合は'Empty Line\n\n'ってのが出る)
 
-        out_record_def,
+        # kw & common w/ BaseShellOperator param
         cwd=None,
         env=None,
         in_record_sep='\n',
         out_record_sep='\n',
         ignore_record_pat=re.compile(r'^\s*$'),
+
+        # kw & original param
    ):
         self._in_batch_sep      = in_batch_sep
         self._batch_done_output = batch_done_output
         self._process = None
 
-        ShellOperator.__init__(
+        BaseShellOperator.__init__(
             self,
             cmd,
             out_record_def,
@@ -57,15 +63,15 @@ class DaemonShellOperator(ShellOperator):
                                  (len(in_batches), len(self._cmddict['in_batches_src']), self._orig_cmd))
 
         # prepare & start process (if necessary)
-        ShellOperator._batches_to_file(self._in_record_sep, in_batches, self._cmddict['in_batches_src'])
+        BaseShellOperator._batches_to_file(self._in_record_sep, in_batches, self._cmddict['in_batches_src'])
         if self._process is None:
-            self._process = ShellOperator._start_process(
+            self._process = BaseShellOperator._start_process(
                 self._cmddict['cmd_array'],
                 self._cmddict['in_batches_src'],
                 self._cmddict['out_batch_dest'],
                 self._cwd, self._env,
             )
-        using_stdin = ShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._cmddict['in_batches_src'])
+        using_stdin = BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._cmddict['in_batches_src'])
         # assert(using_stdin)  # [fix] - initのparse方でちゃんと見てるので，ほんとはここで見る必要なし
         self._process.stdin.write(self._in_batch_sep)
 
@@ -80,20 +86,20 @@ class DaemonShellOperator(ShellOperator):
             mat_idx = out_str.rfind(self._batch_done_output)
             if mat_idx >= 0 and mat_idx + len(self._batch_done_output) == len(out_str):
                 break
-        out_batch = ShellOperator._out_str_to_batch(out_str[:mat_idx],
-                                                    self._out_recdef, self._out_record_sep)
+        out_batch = BaseShellOperator._out_str_to_batch(out_str[:mat_idx],
+                                                        self._out_recdef, self._out_record_sep)
         return out_batch
 
         # if using_stdin:  # これいらなくなる
-        #     ShellOperator._close_stdin(self._process)  # stdin has to recieve EOF explicitly (unlike file)
+        #     BaseShellOperator._close_stdin(self._process)  # stdin has to recieve EOF explicitly (unlike file)
 
 
 
         # self._process.wait()  # [todo] - check if process has successfully exited
-        # ShellOperator._clean_in_files(self._cmddict['in_batches_src'])  # [fix] - この辺はやる必要あるはず
+        # BaseShellOperator._clean_in_files(self._cmddict['in_batches_src'])  # [fix] - この辺はやる必要あるはず
         # if self._cmddict['out_batch_dest'][0] == 'STDOUT':
-        #     out_str   = ShellOperator._output_str_stdout(self._process)
-        #     out_batch = ShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
+        #     out_str   = BaseShellOperator._output_str_stdout(self._process)
+        #     out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
         #     return out_batch
         # else:
         #     raise NotImplementedError
