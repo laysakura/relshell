@@ -10,7 +10,17 @@ from relshell.base_shelloperator import BaseShellOperator
 
 
 class DaemonShellOperator(BaseShellOperator):
-    """DaemonShellOperator"""
+    """Instanciate process and keep it running.
+
+    `DaemonShellOperator` can instanciate processes which satisfy the following constraints:
+
+    1. Inputs records from `stdin`
+    2. Safely dies when `EOF` is input
+    3. Outputs deterministic string when inputting a specific record string.
+       Pair of "specific record string" & "deterministic string" is used as a separtor to distinguish each batch.
+       e.g. `cat` process outputs *LAST_RECORD_OF_BATCH\n* when inputting *LAST_RECORD_OF_BATCH\n*
+
+    """
 
     def __init__(  # [fix] - how to be in-sync w/ parameters of ShellOperator.__init__
                    # [fix] - (when new parameters are added to ShellOperator.__init__)?
@@ -35,10 +45,10 @@ class DaemonShellOperator(BaseShellOperator):
 
         # kw & original param
    ):
-        self._in_batch_sep      = in_batch_sep
-        self._batch_done_output = batch_done_output
-        self._process = None
+        """Constuctor
 
+        :raises: `AttributeError` if `cmd` doesn't seem to satisfy `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_
+        """
         BaseShellOperator.__init__(
             self,
             cmd,
@@ -50,8 +60,14 @@ class DaemonShellOperator(BaseShellOperator):
             ignore_record_pat,
         )
 
+        self._in_batch_sep      = in_batch_sep
+        self._batch_done_output = batch_done_output
+        self._process = None
+
         # check if DaemonShellOperator's constraints are satisfied
         # ここらでself._cmddict['in_batches_src']を見て，ちゃんとSTDINからとるものがあるのかってのを見るのかな
+        # if not self._cmd.has_input_from_stdin():
+        #     raise AttributeError('Following command doesn\'t have ')
 
     def run(self, in_batches):
         """Run shell operator synchronously to eat `in_batches`
@@ -105,7 +121,13 @@ class DaemonShellOperator(BaseShellOperator):
         #     raise NotImplementedError
 
     def kill(self):
+        """Kill instanciated process
+
+        :raises: `AttributeError` if instanciated process doesn't seem to satisfy `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_
+        """
         BaseShellOperator._close_stdin(self._process)
+        self._process.wait()  # [todo] - check if process has successfully exited
+                              # [todo] - if this call does not return, it means 2nd `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_ are not sutisfied => raise `AttributeError`
         self._process = None
 
     def getpid(self):
