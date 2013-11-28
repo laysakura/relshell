@@ -29,7 +29,7 @@ class BatchFromFile(BatchToFromFile):
         stdout.read()  # [fix] - arg is needed not for waiting EOF
         self._stdout = stdout
 
-    def read_tmpfile(self, batch_str):
+    def read_tmpfile(self):
         (fd, path) = self._tmpfile
         with fdopen(fd, 'r') as f:
             return f.read()

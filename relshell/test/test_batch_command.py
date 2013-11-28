@@ -46,38 +46,30 @@ def test_batch_command_duplicated_input_index():
 
 # def test_batch_command_no_OUT_BATCH():
 #     cmd_array = shlex.split('cat')
-#     (cmd_array, out_batch_dest) = _parse_out_batch_dest(cmd_array)
+#     (cmd_array, batch_from_file) = _parse_batch_from_file(cmd_array)
 #     eq_(' '.join(cmd_array), 'cat')
-#     eq_(out_batch_dest, ())
+#     eq_(batch_from_file, ())
 
 
 # def test_batch_command_stdout():
 #     cmd_array = shlex.split('cat a.txt > OUT_BATCH')
-#     (cmd_array, out_batch_dest) = _parse_out_batch_dest(cmd_array)
+#     (cmd_array, batch_from_file) = _parse_batch_from_file(cmd_array)
 #     eq_(' '.join(cmd_array), 'cat a.txt')
-#     eq_(out_batch_dest, ('STDOUT', ))
+#     eq_(batch_from_file, ('STDOUT', ))
 
 
-# def test_batch_command_output_file():
-#     batcmd = BatchCommand('make -o OUT_BATCH')
-#     eq_(len(shlex.split(batcmd.sh_cmd)), 3)
-#     eq_(batcmd.sh_cmd[:7], 'make -o')
+def test_batch_command_output_file():
+    batcmd = BatchCommand('make -o OUT_BATCH')
+    eq_(len(shlex.split(batcmd.sh_cmd)), 3)
+    eq_(batcmd.sh_cmd[:7], 'make -o')
 
-#     assert_true(batcmd.out_batch_src.from_tmpfile())
+    assert_true(batcmd.batch_from_file.is_tmpfile())
+    eq_('', batcmd.batch_from_file.read_tmpfile())  # no one has written to batcmd.batch_from_file.tmpfile_path()
 
-#     cmd_array = shlex.split('make -o OUT_BATCH')
-#     (cmd_array, out_batch_dest) = _parse_out_batch_dest(cmd_array)
-#     eq_(len(cmd_array), 3)
-#     eq_(' '.join(cmd_array)[:7], 'make -o')
-#     eq_(out_batch_dest[0], 'FILE')
-#     (fd, path) = out_batch_dest[1]
-#     with fdopen(fd, 'r') as f:
-#         f.read()
-#         ok_(isinstance(path, str))  # whether  is tmpfile path
-#     ShellOperator._clean_out_file(out_batch_dest)
+    batcmd.batch_from_file.finish()
 
 
 # @raises(IndexError)
 # def test_batch_command_duplicated_OUT_BATCH():
 #     cmd_array = shlex.split('make -o OUT_BATCH > OUT_BATCH')
-#     (cmd_array, out_batch_dest) = _parse_out_batch_dest(cmd_array)
+#     (cmd_array, batch_from_file) = _parse_batch_from_file(cmd_array)

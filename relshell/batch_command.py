@@ -98,7 +98,7 @@ class BatchCommand(object):
             res_batch_from_file = BatchFromFile('TMPFILE')
             res_cmd_array[out_batch_cmdidx]  = res_batch_from_file.tmpfile_path()
 
-        return (res_cmd_array, tuple(res_batch_from_file))
+        return (res_cmd_array, res_batch_from_file)
 
     @staticmethod
     def _in_batches_cmdidx(cmd_array):
