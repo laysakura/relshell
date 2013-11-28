@@ -47,6 +47,29 @@ def test_output_batch_as_is_file():
     eq_(out_batch, in_batch)
 
 
+def test_output_batch_sorted():
+    op = ShellOperator(
+        'sort < IN_BATCH0 > OUT_BATCH',
+        out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+    )
+    rdef = RecordDef([{'name': 'text', 'type': 'STRING'}])
+    in_batch = Batch((
+        Record(rdef, 'test2'),
+        Record(rdef, 'test3'),
+        Record(rdef, 'test1'),
+        Record(rdef, 'test4'),
+    ))
+    sorted_batch = Batch((
+        Record(rdef, 'test1'),
+        Record(rdef, 'test2'),
+        Record(rdef, 'test3'),
+        Record(rdef, 'test4'),
+    ))
+    in_batch  = _create_batch()
+    out_batch = op.run(in_batches=(in_batch, ))
+    eq_(out_batch, sorted_batch)
+
+
 @raises(AttributeError)
 def test_num_in_batch_missmatch():
     op = ShellOperator(

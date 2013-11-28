@@ -3,24 +3,25 @@ from nose.tools import *
 from relshell.recorddef import RecordDef
 from relshell.record import Record
 from relshell.batch import Batch
-# from relshell.daemon_shelloperator import DaemonShellOperator
+from relshell.daemon_shelloperator import DaemonShellOperator
 
 
-# def _create_batch():
-#     rdef = RecordDef([{'name': 'text', 'type': 'STRING'}])
-#     return Batch((
-#         Record(rdef, 'test1'),
-#         Record(rdef, 'test2'),
-#         Record(rdef, 'test3'),
-#         Record(rdef, 'test4'),
-#     ))
+def _create_batch():
+    rdef = RecordDef([{'name': 'text', 'type': 'STRING'}])
+    return Batch((
+        Record(rdef, 'test1'),
+        Record(rdef, 'test2'),
+        Record(rdef, 'test3'),
+        Record(rdef, 'test4'),
+    ))
 
 
 # def test_daemonized_process():
 #     op = DaemonShellOperator(
-#         'cat < IN_BATCH0 > OUT_BATCH',
-#         out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
-#         daemonize      = True,  # op.kill() を明示的に呼び出すまでterminatorの実行がなされない
+#         'sort < IN_BATCH0 > OUT_BATCH',
+#         out_record_def    = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+#         in_batch_sep      = '~~~LAST_ENTITY\n',   # `~` is large in ASCII code
+#         batch_done_output = '~~~LAST_ENTITY\n',
 #     )
 #     prev_pid = None
 #     for i in xrange(10):
