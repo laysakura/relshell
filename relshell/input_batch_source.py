@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    relshell.in_batch_source
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+    relshell.input_batch_source
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     :synopsis: Provides {batch => process input} translations
 """
@@ -9,8 +9,8 @@ from os import fdopen, remove
 from tempfile import mkstemp
 
 
-class InBatchSource(object):
-    """InBatchSource"""
+class InputBatchSource(object):
+    """InputBatchSource"""
 
     def __init__(self, batch_src_type):
         """Constructor

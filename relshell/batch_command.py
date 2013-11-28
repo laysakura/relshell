@@ -8,7 +8,7 @@
 import shlex
 import re
 from tempfile import mkstemp
-from relshell.in_batch_source import InBatchSource
+from relshell.input_batch_source import InputBatchSource
 
 
 class BatchCommand(object):
@@ -38,7 +38,7 @@ class BatchCommand(object):
             # when parsing 'diff IN_BATCH0 IN_BATCH1 > OUT_BATCH'
             (
                 'diff /tmp/relshell-AbCDeF /tmp/relshell-uVwXyz',
-                ( <instance of InBatchSource>, <instance of InBatchSource> )    # (IN_BATCH0, IN_BATCH1)
+                ( <instance of InputBatchSource>, <instance of InputBatchSource> )    # (IN_BATCH0, IN_BATCH1)
                 'STDOUT',
             )
         """
@@ -63,11 +63,11 @@ class BatchCommand(object):
         in_batches_cmdidx  = BatchCommand._in_batches_cmdidx(cmd_array)
         for batch_id, cmdidx in enumerate(in_batches_cmdidx):
             if cmdidx > 0 and cmd_array[cmdidx - 1] == '<':  # e.g. `< IN_BATCH0`
-                res_batch_srcs.append(InBatchSource('STDIN'))
+                res_batch_srcs.append(InputBatchSource('STDIN'))
                 del res_cmd_array[cmdidx], res_cmd_array[cmdidx - 1]
 
             else:  # IN_BATCHx is FILE
-                batch_src = InBatchSource('TMPFILE')
+                batch_src = InputBatchSource('TMPFILE')
                 res_batch_srcs.append(batch_src)
                 res_cmd_array[cmdidx] = batch_src.tmpfile_path()
 

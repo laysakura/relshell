@@ -61,6 +61,12 @@ def test__parser_in_batches_src_duplicated_index():
 
 
 # def test__parser_out_batch_dest_file():
+#     batcmd = BatchCommand('make -o OUT_BATCH')
+#     eq_(len(shlex.split(batcmd.sh_cmd)), 3)
+#     eq_(batcmd.sh_cmd[:7], 'make -o')
+
+#     assert_true(batcmd.to_file())
+
 #     cmd_array = shlex.split('make -o OUT_BATCH')
 #     (cmd_array, out_batch_dest) = _parse_out_batch_dest(cmd_array)
 #     eq_(len(cmd_array), 3)
