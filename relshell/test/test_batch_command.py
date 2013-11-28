@@ -49,11 +49,10 @@ def test_batch_command_no_OUT_BATCH():
     ok_(batcmd.batch_from_file is None)
 
 
-# def test_batch_command_stdout():
-#     cmd_array = shlex.split('cat a.txt > OUT_BATCH')
-#     (cmd_array, batch_from_file) = _parse_batch_from_file(cmd_array)
-#     eq_(' '.join(cmd_array), 'cat a.txt')
-#     eq_(batch_from_file, ('STDOUT', ))
+def test_batch_command_stdout():
+    batcmd = BatchCommand('cat a.txt > OUT_BATCH')
+    eq_(batcmd.sh_cmd, 'cat a.txt')
+    assert_true(batcmd.batch_from_file.is_stdout())
 
 
 def test_batch_command_output_file():
@@ -67,7 +66,6 @@ def test_batch_command_output_file():
     batcmd.batch_from_file.finish()
 
 
-# @raises(IndexError)
-# def test_batch_command_duplicated_OUT_BATCH():
-#     cmd_array = shlex.split('make -o OUT_BATCH > OUT_BATCH')
-#     (cmd_array, batch_from_file) = _parse_batch_from_file(cmd_array)
+@raises(IndexError)
+def test_batch_command_duplicated_OUT_BATCH():
+    BatchCommand('make -o OUT_BATCH > OUT_BATCH')
