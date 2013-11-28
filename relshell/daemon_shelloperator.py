@@ -20,6 +20,13 @@ class DaemonShellOperator(BaseShellOperator):
        Pair of "specific record string" & "deterministic string" is used as a separtor to distinguish each batch.
        e.g. `cat` process outputs *LAST_RECORD_OF_BATCH\n* when inputting *LAST_RECORD_OF_BATCH\n*
 
+    Future support
+    --------------
+
+    Above constraints are losen like below in future:
+
+    1. Support input-records from file if file is only appended
+    2. Support non-`EOF` process terminator (e.g. `exit\n` command for some intreractive shell)
     """
 
     def __init__(
