@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
 from nose.tools import *
 import shlex
-from os import fdopen
-from relshell.shelloperator import ShellOperator
 from relshell.batch_command import BatchCommand
 
 
 def test__parser_in_batches_src_no_IN_BATCH():
     batcmd = BatchCommand('cat')
     eq_(batcmd.sh_cmd, 'cat')
-    eq_(batcmd.batch_srcs, ())
+    eq_(batcmd.batch_to_file_s, ())
 
 
 def test__parser_in_batches_src_stdin():
     batcmd = BatchCommand('cat < IN_BATCH0')
     eq_(batcmd.sh_cmd, 'cat')
-    eq_(len(batcmd.batch_srcs), 1)
-    assert_true(batcmd.batch_srcs[0].from_stdin())
+    eq_(len(batcmd.batch_to_file_s), 1)
+    assert_true(batcmd.batch_to_file_s[0].is_stdin())
 
 
 def test__parser_in_batches_src_file():
@@ -26,13 +24,13 @@ def test__parser_in_batches_src_file():
     eq_(len(cmd_array), 3)
     eq_(cmd_array[0], 'diff')
 
-    assert_true(batcmd.batch_srcs[0].from_tmpfile())
-    assert_true(batcmd.batch_srcs[1].from_tmpfile())
+    assert_true(batcmd.batch_to_file_s[0].is_tmpfile())
+    assert_true(batcmd.batch_to_file_s[1].is_tmpfile())
 
-    for src in batcmd.batch_srcs:
+    for src in batcmd.batch_to_file_s:
         src.write_tmpfile('some batch contents')
 
-    for src in batcmd.batch_srcs:
+    for src in batcmd.batch_to_file_s:
         src.finish()
 
 
@@ -65,7 +63,7 @@ def test__parser_in_batches_src_duplicated_index():
 #     eq_(len(shlex.split(batcmd.sh_cmd)), 3)
 #     eq_(batcmd.sh_cmd[:7], 'make -o')
 
-#     assert_true(batcmd.to_file())
+#     assert_true(batcmd.out_batch_src.from_tmpfile())
 
 #     cmd_array = shlex.split('make -o OUT_BATCH')
 #     (cmd_array, out_batch_dest) = _parse_out_batch_dest(cmd_array)

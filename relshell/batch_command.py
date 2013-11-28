@@ -7,8 +7,8 @@
 """
 import shlex
 import re
-from tempfile import mkstemp
-from relshell.input_batch_source import InputBatchSource
+from relshell.batch_to_file import BatchToFile
+from relshell.batch_from_file import BatchFromFile
 
 
 class BatchCommand(object):
@@ -25,12 +25,12 @@ class BatchCommand(object):
 
         :param batch_cmd: command string w/ (IN|OUT)_BATCH*.
         """
-        (self.sh_cmd, self.batch_srcs, self.batch_dest) = BatchCommand._parse(batch_cmd)
+        (self.sh_cmd, self.batch_to_file_s, self.batch_from_file) = BatchCommand._parse(batch_cmd)
 
     @staticmethod
     def _parse(batch_cmd):
         """
-        :rtype:   (sh_cmd, batch_srcs, batch_dest)
+        :rtype:   (sh_cmd, batch_to_file_s, batch_from_file)
         :returns: parsed result like below:
 
         .. code-block:: python
@@ -38,68 +38,67 @@ class BatchCommand(object):
             # when parsing 'diff IN_BATCH0 IN_BATCH1 > OUT_BATCH'
             (
                 'diff /tmp/relshell-AbCDeF /tmp/relshell-uVwXyz',
-                ( <instance of InputBatchSource>, <instance of InputBatchSource> )    # (IN_BATCH0, IN_BATCH1)
+                ( <instance of BatchToFile>, <instance of BatchToFile> )    # (IN_BATCH0, IN_BATCH1)
                 'STDOUT',
             )
         """
-        cmd_array               = shlex.split(batch_cmd)
-        (cmd_array, batch_srcs) = BatchCommand._parse_batch_srcs(cmd_array)
-        (cmd_array, batch_dest) = BatchCommand._parse_batch_dest(cmd_array)
-        return (' '.join(cmd_array), batch_srcs, batch_dest)
+        cmd_array                    = shlex.split(batch_cmd)
+        (cmd_array, batch_to_file_s) = BatchCommand._parse_in_batches(cmd_array)
+        (cmd_array, batch_from_file) = BatchCommand._parse_out_batch(cmd_array)
+        return (' '.join(cmd_array), batch_to_file_s, batch_from_file)
 
     @staticmethod
-    def _parse_batch_srcs(cmd_array):
-        """Find patterns that match to `in_batches_pat` and replace them into `STDIN` or `FILE`.
+    def _parse_in_batches(cmd_array):
+        """Find patterns that match to `in_batches_pat` and replace them into `STDIN` or `TMPFILE`.
 
         :param cmd_array: `shlex.split`-ed command
-        :rtype:   ([cmd_array], ( batch_src, batch_src, ... ) )
-        :returns: Modified `cmd_array` and tuple to show how each IN_BATCH is instanciated (FILE or STDIN).
+        :rtype:   ([cmd_array], ( batch_to_file, batch_to_file, ... ) )
+        :returns: Modified `cmd_array` and tuple to show how each IN_BATCH is instanciated (TMPFILE or STDIN).
             Returned `cmd_array` drops IN_BATCH related tokens.
         :raises:  `IndexError` if IN_BATCHes don't have sequential ID starting from 0
         """
         res_cmd_array      = cmd_array[:]
-        res_batch_srcs = []
+        res_batch_to_file_s = []
 
         in_batches_cmdidx  = BatchCommand._in_batches_cmdidx(cmd_array)
         for batch_id, cmdidx in enumerate(in_batches_cmdidx):
             if cmdidx > 0 and cmd_array[cmdidx - 1] == '<':  # e.g. `< IN_BATCH0`
-                res_batch_srcs.append(InputBatchSource('STDIN'))
+                res_batch_to_file_s.append(BatchToFile('STDIN'))
                 del res_cmd_array[cmdidx], res_cmd_array[cmdidx - 1]
 
-            else:  # IN_BATCHx is FILE
-                batch_src = InputBatchSource('TMPFILE')
-                res_batch_srcs.append(batch_src)
-                res_cmd_array[cmdidx] = batch_src.tmpfile_path()
+            else:  # IN_BATCHx is TMPFILE
+                batch_to_file = BatchToFile('TMPFILE')
+                res_batch_to_file_s.append(batch_to_file)
+                res_cmd_array[cmdidx] = batch_to_file.tmpfile_path()
 
-        return (res_cmd_array, tuple(res_batch_srcs))
+        return (res_cmd_array, tuple(res_batch_to_file_s))
 
     @staticmethod
-    def _parse_batch_dest(cmd_array):
-        """Find patterns that match to `out_batch_pat` and replace them into `STDOUT` or `FILE`.
+    def _parse_out_batch(cmd_array):
+        """Find patterns that match to `out_batch_pat` and replace them into `STDOUT` or `TMPFILE`.
 
         :param cmd_array: `shlex.split`-ed command
-        :rtype:   ([cmd_array], ('FILE', <retval of `mkstemp()`>)) or ([cmd_array], ('STDOUT', ))
-        :returns: Modified `cmd_array` and tuple to show how OUT_BATCH is instanciated (FILE or STDOUT).
+        :rtype:   ([cmd_array], batch_from_file)
+        :returns: Modified `cmd_array` and tuple to show how OUT_BATCH is instanciated (TMPFILE or STDOUT).
             Returned `cmd_array` drops OUT_BATCH related tokens.
         :raises:  `IndexError` if multiple OUT_BATCH are found
         """
         res_cmd_array     = cmd_array[:]
-        res_out_batch_tup = ()
+        res_batch_from_file = None
 
         out_batch_cmdidx = BatchCommand._out_batch_cmdidx(cmd_array)
         if out_batch_cmdidx is None:
-            return (res_cmd_array, res_out_batch_tup)
+            return (res_cmd_array, res_batch_from_file)
 
         if out_batch_cmdidx > 0 and cmd_array[out_batch_cmdidx - 1] == '>':  # e.g. `> OUT_BATCH`
-            res_out_batch_tup = ('STDOUT', )
+            res_batch_from_file = BatchFromFile('STDOUT')
             del res_cmd_array[out_batch_cmdidx], res_cmd_array[out_batch_cmdidx - 1]
 
-        else:  # OUT_BATCH is FILE
-            tmpfile = mkstemp(prefix='relshell-', suffix='.batch')
-            res_out_batch_tup = ('FILE', tmpfile)
-            res_cmd_array[out_batch_cmdidx]  = tmpfile[1]
+        else:  # OUT_BATCH is TMPFILE
+            res_batch_from_file = BatchFromFile('TMPFILE')
+            res_cmd_array[out_batch_cmdidx]  = res_batch_from_file.tmpfile_path()
 
-        return (res_cmd_array, tuple(res_out_batch_tup))
+        return (res_cmd_array, tuple(res_batch_from_file))
 
     @staticmethod
     def _in_batches_cmdidx(cmd_array):
