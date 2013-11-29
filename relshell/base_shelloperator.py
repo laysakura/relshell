@@ -60,8 +60,8 @@ class BaseShellOperator(object):
             stdin  = PIPE if batcmd.has_input_from_stdin() else None,
             stdout = PIPE if batcmd.batch_from_file.is_stdout() else None,
             stderr = None,
-            cwd = cwd,
-            env = env,
+            cwd    = cwd,
+            env    = env,
         )
 
     @staticmethod

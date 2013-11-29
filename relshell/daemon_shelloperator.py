@@ -7,6 +7,9 @@
 """
 import shlex
 import re
+import os
+import fcntl
+from subprocess import Popen, PIPE
 from relshell.base_shelloperator import BaseShellOperator
 
 
@@ -85,7 +88,7 @@ class DaemonShellOperator(BaseShellOperator):
         # prepare & start process (if necessary)
         BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         if self._process is None:
-            self._process = BaseShellOperator._start_process(self._batcmd, self._cwd, self._env)
+            self._process = DaemonShellOperator._start_process(self._batcmd, self._cwd, self._env)
         BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         # assert(using_stdin)  # [fix] - initのparse方でちゃんと見てるので，ほんとはここで見る必要なし
         self._process.stdin.write(self._in_batch_sep)
@@ -95,9 +98,12 @@ class DaemonShellOperator(BaseShellOperator):
         import time
         out_str = ''  # [fix] - addition to str
         while True:
-            # time.sleep(0.1)
+            time.sleep(0.1)
             self._process.stdout.flush()
-            out_str += self._process.stdout.read(1)
+            try:
+                out_str += self._process.stdout.read()
+            except IOError:  # no character available from stdout
+                pass
             mat_idx = out_str.rfind(self._batch_done_output)
             if mat_idx >= 0 and mat_idx + len(self._batch_done_output) == len(out_str):
                 break
@@ -136,3 +142,17 @@ class DaemonShellOperator(BaseShellOperator):
 
     def getpid(self):
         return self._process.pid if self._process else None
+
+    @staticmethod
+    def _start_process(batcmd, cwd, env):
+        p = Popen(
+            shlex.split(batcmd.sh_cmd),
+            stdin   = PIPE if batcmd.has_input_from_stdin() else None,
+            stdout  = PIPE if batcmd.batch_from_file.is_stdout() else None,
+            stderr  = None,
+            cwd     = cwd,
+            env     = env,
+            bufsize = 1,
+        )
+        fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
+        return p
