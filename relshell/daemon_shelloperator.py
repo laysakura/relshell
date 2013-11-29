@@ -129,6 +129,8 @@ class DaemonShellOperator(BaseShellOperator):
 
     @staticmethod
     def _start_process(batcmd, cwd, env):
+        # using non-blocking stdout w/ buffer size 1.
+        # See: http://stackoverflow.com/questions/8980050/persistent-python-subprocess
         p = Popen(
             shlex.split(batcmd.sh_cmd),
             stdin   = PIPE if batcmd.has_input_from_stdin() else None,
