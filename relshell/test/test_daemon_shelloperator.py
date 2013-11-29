@@ -19,9 +19,9 @@ def _create_batch():
 def test_daemonized_process():
     op = DaemonShellOperator(
         'cat < IN_BATCH0 > OUT_BATCH',
-        out_record_def    = RecordDef([{'name': 'text', 'type': 'STRING'}]),
-        in_batch_sep      = 'BATCH_SEPARATOR\n',
-        batch_done_output = 'BATCH_SEPARATOR\n',
+        out_record_def       = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        batch_done_indicator = 'BATCH_DONE\n',
+        batch_done_output    = 'BATCH_DONE\n',
     )
     prev_pid = op.getpid()
     ok_(prev_pid is None)
@@ -47,6 +47,6 @@ def test_daemon_shelloperator_constraints():
     DaemonShellOperator(
         'cat IN_BATCH0 > OUT_BATCH',    # [todo] - currently input must be from stdin, but `tail` from file will be also supported
         out_record_def    = RecordDef([{'name': 'text', 'type': 'STRING'}]),
-        in_batch_sep      = 'BATCH_SEPARATOR\n',
+        batch_done_indicator      = 'BATCH_SEPARATOR\n',
         batch_done_output = 'BATCH_SEPARATOR\n',
     )

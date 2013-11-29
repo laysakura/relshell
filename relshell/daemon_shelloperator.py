@@ -41,7 +41,7 @@ class DaemonShellOperator(BaseShellOperator):
         out_record_def,
 
         # non-kw & original param
-        in_batch_sep,
+        batch_done_indicator,
         batch_done_output,
 
         # kw & common w/ BaseShellOperator param
@@ -68,8 +68,8 @@ class DaemonShellOperator(BaseShellOperator):
             ignore_record_pat,
         )
 
-        self._in_batch_sep      = in_batch_sep
-        self._batch_done_output = batch_done_output
+        self._batch_done_indicator = batch_done_indicator
+        self._batch_done_output    = batch_done_output
         self._process = None
 
         if not self._batcmd.has_input_from_stdin():
@@ -90,8 +90,9 @@ class DaemonShellOperator(BaseShellOperator):
         if self._process is None:
             self._process = DaemonShellOperator._start_process(self._batcmd, self._cwd, self._env)
         BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
-        # assert(using_stdin)  # [fix] - initのparse方でちゃんと見てるので，ほんとはここで見る必要なし
-        self._process.stdin.write(self._in_batch_sep)
+
+        # pass batch-done indicator
+        self._process.stdin.write(self._batch_done_indicator)
 
         # wait for batch separator & get its output
         # ここで，stdoutの結果をpollして，文字列の終わりが`batch_done_output`に一致しているかどうかを見る
