@@ -90,3 +90,12 @@ def test_num_in_batch_missmatch_stdin():
     in_batch0  = _create_batch()
     in_batch1  = _create_batch()
     op.run(in_batches=(in_batch0, in_batch1))
+
+
+@raises(OSError)
+def test_output_batch_error_cmd():
+    op = ShellOperator(
+        'cat /no/such/file > OUT_BATCH',
+        out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+    )
+    op.run(in_batches=())

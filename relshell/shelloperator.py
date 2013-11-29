@@ -59,7 +59,7 @@ class ShellOperator(BaseShellOperator):
         if len(in_batches) != len(self._batcmd.batch_to_file_s):
             BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
             raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:\n$ %s' %
-                                 (len(in_batches), len(self._batcmd.batch_to_file_s), self._orig_cmd))
+                                 (len(in_batches), len(self._batcmd.batch_to_file_s), self._batcmd.sh_cmd))
 
         # prepare & start process
         BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
