@@ -5,7 +5,6 @@
 
     :synopsis: Provides `ShellOperator`
 """
-import shlex
 import re
 from relshell.base_shelloperator import BaseShellOperator
 
@@ -73,7 +72,10 @@ class ShellOperator(BaseShellOperator):
         for b2f in self._batcmd.batch_to_file_s:
             if b2f.is_stdin():
                 b2f.finish()
-        process.wait()  # [todo] - check if process has successfully exited
+
+        BaseShellOperator._wait_process(process, self._batcmd.sh_cmd)
+
+        # [todo] - subroutine
         for b2f in self._batcmd.batch_to_file_s:
             if b2f.is_tmpfile():
                 b2f.finish()

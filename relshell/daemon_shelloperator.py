@@ -119,8 +119,10 @@ class DaemonShellOperator(BaseShellOperator):
         for b2f in self._batcmd.batch_to_file_s:
             if b2f.is_stdin():
                 b2f.finish()
-        self._process.wait()  # [todo] - check if process has successfully exited
-                              # [todo] - if this call does not return, it means 2nd `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_ are not sutisfied => raise `AttributeError`
+
+        BaseShellOperator._wait_process(self._process, self._batcmd.sh_cmd)
+
+        # [todo] - subroutine
         for b2f in self._batcmd.batch_to_file_s:
             if b2f.is_tmpfile():
                 b2f.finish()

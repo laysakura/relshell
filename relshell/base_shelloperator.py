@@ -103,3 +103,9 @@ class BaseShellOperator(object):
 
         out_batch = Batch(tuple(out_recs))
         return out_batch
+
+    @staticmethod
+    def _wait_process(process, sh_cmd):
+        exitcode = process.wait()    # [todo] - if this call does not return, it means 2nd `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_ are not sutisfied => raise `AttributeError`
+        if exitcode != 0:
+            raise OSError('Following command ended with exitcode %d:\n$%s' % (exitcode, sh_cmd))
