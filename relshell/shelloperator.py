@@ -58,6 +58,9 @@ class ShellOperator(BaseShellOperator):
         :param in_batches: `tuple` of batches to process
         """
         if len(in_batches) != len(self._batcmd.batch_to_file_s):
+            for b2f in self._batcmd.batch_to_file_s:
+                if b2f.is_tmpfile:
+                    b2f.finish()  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
             raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:\n$ %s' %
                                  (len(in_batches), len(self._batcmd.batch_to_file_s), self._orig_cmd))
 
