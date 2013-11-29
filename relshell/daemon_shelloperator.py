@@ -128,17 +128,21 @@ class DaemonShellOperator(BaseShellOperator):
 
     @staticmethod
     def _start_process(batcmd, cwd, env):
-        # using non-blocking stdout w/ buffer size 1.
-        # See: http://stackoverflow.com/questions/8980050/persistent-python-subprocess
-        p = Popen(
-            shlex.split(batcmd.sh_cmd),
-            stdin   = PIPE if batcmd.has_input_from_stdin() else None,
-            stdout  = PIPE if batcmd.batch_from_file.is_stdout() else None,
-            stderr  = None,
-            cwd     = cwd,
-            env     = env,
-            bufsize = 1,
-        )
+        try:
+            # using non-blocking stdout w/ buffer size 1.
+            # See: http://stackoverflow.com/questions/8980050/persistent-python-subprocess
+            p = Popen(
+                shlex.split(batcmd.sh_cmd),
+                stdin   = PIPE if batcmd.has_input_from_stdin() else None,
+                stdout  = PIPE if batcmd.batch_from_file.is_stdout() else None,
+                stderr  = None,
+                cwd     = cwd,
+                env     = env,
+                bufsize = 1,
+            )
+        except OSError as e:
+            raise OSError('Following command fails - %s:\n$ %s' % (e, batcmd.sh_cmd))
+
         fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         return p
 

@@ -46,7 +46,19 @@ def test_daemonized_process():
 def test_daemon_shelloperator_constraints():
     DaemonShellOperator(
         'cat IN_BATCH0 > OUT_BATCH',    # [todo] - currently input must be from stdin, but `tail` from file will be also supported
-        out_record_def    = RecordDef([{'name': 'text', 'type': 'STRING'}]),
-        batch_done_indicator      = 'BATCH_SEPARATOR\n',
-        batch_done_output = 'BATCH_SEPARATOR\n',
+        out_record_def       = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        batch_done_indicator = 'BATCH_SEPARATOR\n',
+        batch_done_output    = 'BATCH_SEPARATOR\n',
     )
+
+
+@raises(OSError)
+def test_output_batch_error_cmd():
+    op = DaemonShellOperator(
+        'wiredcmd < IN_BATCH0',
+        out_record_def       = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        batch_done_indicator = 'BATCH_SEPARATOR\n',
+        batch_done_output    = 'BATCH_SEPARATOR\n',
+    )
+    batch = _create_batch()
+    op.run(in_batches=(batch, ))
