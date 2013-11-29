@@ -42,11 +42,11 @@ def test_daemonized_process():
     ok_(op.getpid() is None)
 
 
-# @raises(AttributeError)
-# def test_daemon_shelloperator_constraints():
-#     op = DaemonShellOperator(
-#         'cat IN_BATCH0 > OUT_BATCH',    # [todo] - currently input must be from stdin, but `tail` from file will be also supported
-#         out_record_def    = RecordDef([{'name': 'text', 'type': 'STRING'}]),
-#         in_batch_sep      = 'BATCH_SEPARATOR\n',
-#         batch_done_output = 'BATCH_SEPARATOR\n',
-#     )
+@raises(AttributeError)
+def test_daemon_shelloperator_constraints():
+    DaemonShellOperator(
+        'cat IN_BATCH0 > OUT_BATCH',    # [todo] - currently input must be from stdin, but `tail` from file will be also supported
+        out_record_def    = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        in_batch_sep      = 'BATCH_SEPARATOR\n',
+        batch_done_output = 'BATCH_SEPARATOR\n',
+    )
