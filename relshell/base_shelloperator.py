@@ -66,11 +66,11 @@ class BaseShellOperator(object):
 
     @staticmethod
     def _input_str(in_batch, in_record_sep):
-        input_str = ''
+        input_str_list = []
         for i, record in enumerate(in_batch):
-            input_str += record[0]  # [fix] - 複雑なrecorddefに対応してない
-            input_str += in_record_sep   # [fix] - str is immutable, so addition is bad idea
-        return input_str
+            input_str_list.append(record[0])   # [fix] - 複雑なrecorddefに対応してない
+            input_str_list.append(in_record_sep)
+        return ''.join(input_str_list)
 
     @staticmethod
     def _batches_to_tmpfile(in_record_sep, in_batches, batch_to_file_s):

@@ -33,11 +33,11 @@ class Batch(object):
         return next(self._records_iter)
 
     def __str__(self):
-        ret = '(\n'
+        ret_str_list = ['(\n']
         for i in xrange(len(self._records)):
-            ret += '    %s\n' % (self._records[i])
-        ret += ')\n'
-        return ret
+            ret_str_list.append('    %s\n' % (self._records[i]))
+        ret_str_list.append(')\n')
+        return ''.join(ret_str_list)
 
     def __eq__(self, other):
         if len(self._records) != len(other._records):

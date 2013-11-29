@@ -96,15 +96,17 @@ class DaemonShellOperator(BaseShellOperator):
         self._process.stdin.write(self._batch_done_indicator)
 
         # wait for batch separator & get its output
-        out_str = ''  # [fix] - addition to str
+        out_str_list = []
         while True:
             self._process.stdout.flush()
+            # stdout is set non-blocking in `DaemonShellOperator._start_process()`
             try:
-                out_str += self._process.stdout.read()  # stdout is set non-blocking in `DaemonShellOperator._start_process()`
+                out_str_list.append(self._process.stdout.read())
             except IOError:  # no character available from stdout
                 time.sleep(1e-3)
-            if DaemonShellOperator._batch_done(out_str, self._batch_done_indicator):
+            if DaemonShellOperator._batch_done(''.join(out_str_list), self._batch_done_indicator):
                 break
+        out_str = ''.join(out_str_list)
         out_batch = BaseShellOperator._out_str_to_batch(out_str[:-(len(self._batch_done_indicator))],
                                                         self._out_recdef, self._out_record_sep)
         return out_batch
