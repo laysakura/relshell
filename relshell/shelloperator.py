@@ -59,7 +59,7 @@ class ShellOperator(BaseShellOperator):
         """
         if len(in_batches) != len(self._batcmd.batch_to_file_s):
             for b2f in self._batcmd.batch_to_file_s:
-                if b2f.is_tmpfile:
+                if b2f.is_tmpfile():
                     b2f.finish()  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
             raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:\n$ %s' %
                                  (len(in_batches), len(self._batcmd.batch_to_file_s), self._orig_cmd))
@@ -86,6 +86,7 @@ class ShellOperator(BaseShellOperator):
         if self._batcmd.batch_from_file.is_stdout():
             out_str   = self._batcmd.batch_from_file.read_stdout(process.stdout)
             out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
+            self._batcmd.batch_from_file.finish()
             return out_batch
         else:
             raise NotImplementedError

@@ -45,7 +45,7 @@ class BaseShellOperator(object):
         if ignore_record_pat: BaseShellOperator._ignore_record_pat = ignore_record_pat
 
     @abstractmethod
-    def run(self, in_batches):
+    def run(self, in_batches):  # pragma: no cover
         """Run shell operator synchronously to eat `in_batches`
 
         :param in_batches: `tuple` of batches to process
@@ -88,10 +88,6 @@ class BaseShellOperator(object):
                 input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep)
                 b2f.write_stdin(process.stdin, input_str)
                 break  # at most 1 batch_to_file can be from stdin
-
-    @staticmethod
-    def _output_str_stdout(batch_from_file, process):
-        return batch_from_file.read_stdout(process.stdout)
 
     @staticmethod
     def _out_str_to_batch(out_str, out_recdef, out_record_sep):

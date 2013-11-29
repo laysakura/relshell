@@ -26,9 +26,6 @@ class BatchToFromFile(object):
     def is_tmpfile(self):
         return self._type == 'TMPFILE'
 
-    def is_stdout(self):
-        return self._type == 'STDOUT'
-
     def tmpfile_path(self):
         assert self._type == 'TMPFILE'
         (fd, path) = self._tmpfile
@@ -40,5 +37,5 @@ class BatchToFromFile(object):
         remove(path)
 
     @abstractmethod
-    def finish(self):
+    def finish(self):  # pragma: no cover
         pass

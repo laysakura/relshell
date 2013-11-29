@@ -71,9 +71,20 @@ def test_output_batch_sorted():
 
 
 @raises(AttributeError)
-def test_num_in_batch_missmatch():
+def test_num_in_batch_missmatch_file():
     op = ShellOperator(
-        'cat IN_BATCH0 > OUT_BATCH',
+        'cat IN_BATCH0  > OUT_BATCH',
+        out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+    )
+    in_batch0  = _create_batch()
+    in_batch1  = _create_batch()
+    op.run(in_batches=(in_batch0, in_batch1))
+
+
+@raises(AttributeError)
+def test_num_in_batch_missmatch_stdin():
+    op = ShellOperator(
+        'cat < IN_BATCH0  > OUT_BATCH',
         out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
     )
     in_batch0  = _create_batch()

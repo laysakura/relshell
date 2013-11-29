@@ -17,7 +17,7 @@ class BatchFromFile(BatchToFromFile):
 
         :param file_type: 'TMPFILE' or 'STDOUT'
         """
-        if file_type not in ('TMPFILE', 'STDOUT'):
+        if file_type not in ('TMPFILE', 'STDOUT'):  # pragma: no cover
             raise NotImplementedError("Only 'TMPFILE' or 'STDOUT' are supported")
         BatchToFromFile.__init__(self, file_type)
 
