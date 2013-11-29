@@ -55,14 +55,17 @@ class BaseShellOperator(object):
 
     @staticmethod
     def _start_process(batcmd, cwd, env):
-        return Popen(
-            shlex.split(batcmd.sh_cmd),
-            stdin  = PIPE if batcmd.has_input_from_stdin() else None,
-            stdout = PIPE if batcmd.batch_from_file.is_stdout() else None,
-            stderr = None,
-            cwd    = cwd,
-            env    = env,
-        )
+        try:
+            return Popen(
+                shlex.split(batcmd.sh_cmd),
+                stdin  = PIPE if batcmd.has_input_from_stdin() else None,
+                stdout = PIPE if batcmd.batch_from_file.is_stdout() else None,
+                stderr = None,
+                cwd    = cwd,
+                env    = env,
+            )
+        except OSError as e:
+            raise OSError('Following command fails - %s:\n$ %s' % (e, batcmd.sh_cmd))
 
     @staticmethod
     def _input_str(in_batch, in_record_sep):

@@ -93,9 +93,18 @@ def test_num_in_batch_missmatch_stdin():
 
 
 @raises(OSError)
-def test_output_batch_error_cmd():
+def test_output_batch_error_cmd1():
     op = ShellOperator(
         'cat /no/such/file > OUT_BATCH',
+        out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+    )
+    op.run(in_batches=())
+
+
+@raises(OSError)
+def test_output_batch_error_cmd2():
+    op = ShellOperator(
+        'wiredcmd > OUT_BATCH',
         out_record_def = RecordDef([{'name': 'text', 'type': 'STRING'}]),
     )
     op.run(in_batches=())
