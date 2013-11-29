@@ -86,7 +86,7 @@ class DaemonShellOperator(BaseShellOperator):
                                  (len(in_batches), len(self._batcmd.batch_to_file_s), self._orig_cmd))
 
         # prepare & start process (if necessary)
-        BaseShellOperator._batches_to_file(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
+        BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         if self._process is None:
             self._process = BaseShellOperator._start_process(
                 shlex.split(self._batcmd.sh_cmd),

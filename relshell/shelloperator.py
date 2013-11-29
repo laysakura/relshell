@@ -62,7 +62,7 @@ class ShellOperator(BaseShellOperator):
                                  (len(in_batches), len(self._batcmd.batch_to_file_s), self._orig_cmd))
 
         # prepare & start process
-        BaseShellOperator._batches_to_file(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
+        BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         process = BaseShellOperator._start_process(
             shlex.split(self._batcmd.sh_cmd),
             self._batcmd.batch_to_file_s,

@@ -72,7 +72,7 @@ class BaseShellOperator(object):
         return input_str
 
     @staticmethod
-    def _batches_to_file(in_record_sep, in_batches, batch_to_file_s):
+    def _batches_to_tmpfile(in_record_sep, in_batches, batch_to_file_s):
         """Create files to store in-batches contents (if necessary)"""
         for i, b2f in enumerate(batch_to_file_s):
             if b2f.is_tmpfile():
