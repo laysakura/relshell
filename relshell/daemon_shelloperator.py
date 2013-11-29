@@ -9,6 +9,7 @@ import shlex
 import re
 import os
 import fcntl
+import time
 from subprocess import Popen, PIPE
 from relshell.base_shelloperator import BaseShellOperator
 
@@ -95,36 +96,18 @@ class DaemonShellOperator(BaseShellOperator):
         self._process.stdin.write(self._batch_done_indicator)
 
         # wait for batch separator & get its output
-        # ここで，stdoutの結果をpollして，文字列の終わりが`batch_done_output`に一致しているかどうかを見る
-        import time
         out_str = ''  # [fix] - addition to str
         while True:
-            time.sleep(0.1)
             self._process.stdout.flush()
             try:
-                out_str += self._process.stdout.read()
+                out_str += self._process.stdout.read()  # stdout is set non-blocking in `DaemonShellOperator._start_process()`
             except IOError:  # no character available from stdout
-                pass
-            mat_idx = out_str.rfind(self._batch_done_output)
-            if mat_idx >= 0 and mat_idx + len(self._batch_done_output) == len(out_str):
+                time.sleep(1e-3)
+            if DaemonShellOperator._batch_done(out_str, self._batch_done_indicator):
                 break
-        out_batch = BaseShellOperator._out_str_to_batch(out_str[:mat_idx],
+        out_batch = BaseShellOperator._out_str_to_batch(out_str[:-(len(self._batch_done_indicator))],
                                                         self._out_recdef, self._out_record_sep)
         return out_batch
-
-        # if using_stdin:  # これいらなくなる
-        #     BaseShellOperator._close_stdin(self._process)  # stdin has to recieve EOF explicitly (unlike file)
-
-
-
-        # self._process.wait()  # [todo] - check if process has successfully exited
-        # BaseShellOperator._clean_in_files(self._batcmd.batch_to_file_s)  # [fix] - この辺はやる必要あるはず
-        # if self._cmddict['out_batch_dest'][0] == 'STDOUT':
-        #     out_str   = BaseShellOperator._output_str_stdout(self._process)
-        #     out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
-        #     return out_batch
-        # else:
-        #     raise NotImplementedError
 
     def kill(self):
         """Kill instanciated process
@@ -157,3 +140,8 @@ class DaemonShellOperator(BaseShellOperator):
         )
         fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         return p
+
+    @staticmethod
+    def _batch_done(process_output_str, batch_done_indicator):
+        mat_idx = process_output_str.rfind(batch_done_indicator)
+        return mat_idx >= 0 and mat_idx + len(batch_done_indicator) == len(process_output_str)
