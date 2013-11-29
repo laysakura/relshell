@@ -74,6 +74,7 @@ class DaemonShellOperator(BaseShellOperator):
         self._process = None
 
         if not self._batcmd.has_input_from_stdin():
+            BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
             raise AttributeError('Following command doesn\'t have input from stdin:\n$ %s' %
                                  (self._batcmd.sh_cmd))
 
@@ -83,6 +84,7 @@ class DaemonShellOperator(BaseShellOperator):
         :param in_batches: `tuple` of batches to process
         """
         if len(in_batches) != len(self._batcmd.batch_to_file_s):
+            BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
             raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:\n$ %s' %
                                  (len(in_batches), len(self._batcmd.batch_to_file_s), self._orig_cmd))
 
@@ -116,16 +118,9 @@ class DaemonShellOperator(BaseShellOperator):
 
         :raises: `AttributeError` if instanciated process doesn't seem to satisfy `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_
         """
-        for b2f in self._batcmd.batch_to_file_s:
-            if b2f.is_stdin():
-                b2f.finish()
-
+        BaseShellOperator._close_process_input_stdin(self._batcmd.batch_to_file_s)
         BaseShellOperator._wait_process(self._process, self._batcmd.sh_cmd)
-
-        # [todo] - subroutine
-        for b2f in self._batcmd.batch_to_file_s:
-            if b2f.is_tmpfile():
-                b2f.finish()
+        BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)
         self._process = None
 
     def getpid(self):

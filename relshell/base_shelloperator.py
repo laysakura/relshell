@@ -109,3 +109,15 @@ class BaseShellOperator(object):
         exitcode = process.wait()    # [todo] - if this call does not return, it means 2nd `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_ are not sutisfied => raise `AttributeError`
         if exitcode != 0:
             raise OSError('Following command ended with exitcode %d:\n$%s' % (exitcode, sh_cmd))
+
+    @staticmethod
+    def _close_process_input_stdin(batch_to_file_s):
+        for b2f in batch_to_file_s:
+            if b2f.is_stdin():
+                b2f.finish()
+
+    @staticmethod
+    def _rm_process_input_tmpfiles(batch_to_file_s):
+        for b2f in batch_to_file_s:
+            if b2f.is_tmpfile():
+                b2f.finish()
