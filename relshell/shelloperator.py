@@ -7,7 +7,6 @@
 """
 import shlex
 import re
-from relshell.cmdparser import parse
 from relshell.base_shelloperator import BaseShellOperator
 
 

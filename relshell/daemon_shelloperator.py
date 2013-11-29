@@ -5,6 +5,7 @@
 
     :synopsis: Provides `DaemonShellOperator`
 """
+import shlex
 import re
 from relshell.base_shelloperator import BaseShellOperator
 
@@ -71,7 +72,7 @@ class DaemonShellOperator(BaseShellOperator):
         self._process = None
 
         # check if DaemonShellOperator's constraints are satisfied
-        # ここらでself._cmddict['in_batches_src']を見て，ちゃんとSTDINからとるものがあるのかってのを見るのかな
+        # ここらでself._batcmd.batch_to_file_sを見て，ちゃんとSTDINからとるものがあるのかってのを見るのかな
         # if not self._cmd.has_input_from_stdin():
         #     raise AttributeError('Following command doesn\'t have ')
 
@@ -80,20 +81,20 @@ class DaemonShellOperator(BaseShellOperator):
 
         :param in_batches: `tuple` of batches to process
         """
-        if len(in_batches) != len(self._cmddict['in_batches_src']):
+        if len(in_batches) != len(self._batcmd.batch_to_file_s):
             raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:\n$ %s' %
-                                 (len(in_batches), len(self._cmddict['in_batches_src']), self._orig_cmd))
+                                 (len(in_batches), len(self._batcmd.batch_to_file_s), self._orig_cmd))
 
         # prepare & start process (if necessary)
-        BaseShellOperator._batches_to_file(self._in_record_sep, in_batches, self._cmddict['in_batches_src'])
+        BaseShellOperator._batches_to_file(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         if self._process is None:
             self._process = BaseShellOperator._start_process(
-                self._cmddict['cmd_array'],
-                self._cmddict['in_batches_src'],
-                self._cmddict['out_batch_dest'],
+                shlex.split(self._batcmd.sh_cmd),
+                self._batcmd.batch_to_file_s,
+                self._batcmd.batch_from_file,
                 self._cwd, self._env,
             )
-        using_stdin = BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._cmddict['in_batches_src'])
+        using_stdin = BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         # assert(using_stdin)  # [fix] - initのparse方でちゃんと見てるので，ほんとはここで見る必要なし
         self._process.stdin.write(self._in_batch_sep)
 
@@ -118,7 +119,7 @@ class DaemonShellOperator(BaseShellOperator):
 
 
         # self._process.wait()  # [todo] - check if process has successfully exited
-        # BaseShellOperator._clean_in_files(self._cmddict['in_batches_src'])  # [fix] - この辺はやる必要あるはず
+        # BaseShellOperator._clean_in_files(self._batcmd.batch_to_file_s)  # [fix] - この辺はやる必要あるはず
         # if self._cmddict['out_batch_dest'][0] == 'STDOUT':
         #     out_str   = BaseShellOperator._output_str_stdout(self._process)
         #     out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
@@ -131,9 +132,14 @@ class DaemonShellOperator(BaseShellOperator):
 
         :raises: `AttributeError` if instanciated process doesn't seem to satisfy `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_
         """
-        BaseShellOperator._close_stdin(self._process)
+        for b2f in self._batcmd.batch_to_file_s:
+            if b2f.is_stdin():
+                b2f.finish()
         self._process.wait()  # [todo] - check if process has successfully exited
                               # [todo] - if this call does not return, it means 2nd `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_ are not sutisfied => raise `AttributeError`
+        for b2f in self._batcmd.batch_to_file_s:
+            if b2f.is_tmpfile():
+                b2f.finish()
         self._process = None
 
     def getpid(self):
