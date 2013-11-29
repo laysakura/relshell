@@ -39,9 +39,7 @@ class DaemonShellOperator(BaseShellOperator):
 
         # non-kw & original param
         in_batch_sep,
-        batch_done_output,      # バッチの終わりに in_batch_sep をあえて入れさせて，
-                                # それに対するprocessの出力をみてやり，バッチ処理が終わったかを判定
-                                # (enjuの場合は'Empty Line\n\n'ってのが出る)
+        batch_done_output,
 
         # kw & common w/ BaseShellOperator param
         cwd=None,
@@ -71,10 +69,9 @@ class DaemonShellOperator(BaseShellOperator):
         self._batch_done_output = batch_done_output
         self._process = None
 
-        # check if DaemonShellOperator's constraints are satisfied
-        # ここらでself._batcmd.batch_to_file_sを見て，ちゃんとSTDINからとるものがあるのかってのを見るのかな
-        # if not self._cmd.has_input_from_stdin():
-        #     raise AttributeError('Following command doesn\'t have ')
+        if not self._batcmd.has_input_from_stdin():
+            raise AttributeError('Following command doesn\'t have input from stdin:\n$ %s' %
+                                 (self._batcmd.sh_cmd))
 
     def run(self, in_batches):
         """Run shell operator synchronously to eat `in_batches`
@@ -88,13 +85,8 @@ class DaemonShellOperator(BaseShellOperator):
         # prepare & start process (if necessary)
         BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         if self._process is None:
-            self._process = BaseShellOperator._start_process(
-                shlex.split(self._batcmd.sh_cmd),
-                self._batcmd.batch_to_file_s,
-                self._batcmd.batch_from_file,
-                self._cwd, self._env,
-            )
-        using_stdin = BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
+            self._process = BaseShellOperator._start_process(self._batcmd, self._cwd, self._env)
+        BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         # assert(using_stdin)  # [fix] - initのparse方でちゃんと見てるので，ほんとはここで見る必要なし
         self._process.stdin.write(self._in_batch_sep)
 

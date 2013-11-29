@@ -66,12 +66,7 @@ class ShellOperator(BaseShellOperator):
 
         # prepare & start process
         BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
-        process = BaseShellOperator._start_process(
-            shlex.split(self._batcmd.sh_cmd),
-            self._batcmd.batch_to_file_s,
-            self._batcmd.batch_from_file,
-            self._cwd, self._env,
-        )
+        process = BaseShellOperator._start_process(self._batcmd, self._cwd, self._env)
         BaseShellOperator._batch_to_stdin(process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
 
         # wait process & get its output

@@ -27,6 +27,13 @@ class BatchCommand(object):
         """
         (self.sh_cmd, self.batch_to_file_s, self.batch_from_file) = BatchCommand._parse(batch_cmd)
 
+    def has_input_from_stdin(self):
+        """Return if any IN_BATCH* is input from stdin to process"""
+        for b2f in self.batch_to_file_s:
+            if b2f.is_stdin():
+                return True
+        return False
+
     @staticmethod
     def _parse(batch_cmd):
         """
@@ -128,7 +135,6 @@ class BatchCommand(object):
                                  (batch_idx, len(in_batches_cmdidx_dict) - 1, ' '.join(cmd_array)))
 
         return tuple(in_batches_cmdidx)
-
 
     @staticmethod
     def _out_batch_cmdidx(cmd_array):

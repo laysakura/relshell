@@ -6,6 +6,7 @@
     :synopsis: Provides abstract `BaseShellOperator`
 """
 from abc import ABCMeta, abstractmethod
+import shlex
 from subprocess import Popen, PIPE
 from relshell.record import Record
 from relshell.batch import Batch
@@ -53,11 +54,11 @@ class BaseShellOperator(object):
         pass
 
     @staticmethod
-    def _start_process(cmd_array, batch_to_file_s, batch_from_file, cwd, env):
+    def _start_process(batcmd, cwd, env):
         return Popen(
-            cmd_array,
-            stdin  = PIPE if len([b2f for b2f in batch_to_file_s if b2f.is_stdin()]) else None,
-            stdout = PIPE if batch_from_file.is_stdout() else None,
+            shlex.split(batcmd.sh_cmd),
+            stdin  = PIPE if batcmd.has_input_from_stdin() else None,
+            stdout = PIPE if batcmd.batch_from_file.is_stdout() else None,
             stderr = None,
             cwd = cwd,
             env = env,
