@@ -6,11 +6,10 @@
     :synopsis: Provides abstract `BaseShellOperator`
 """
 from abc import ABCMeta, abstractmethod
-from os import fdopen, remove
 from subprocess import Popen, PIPE
 from relshell.record import Record
 from relshell.batch import Batch
-from relshell.cmdparser import parse
+from relshell.batch_command import BatchCommand
 
 
 class BaseShellOperator(object):
@@ -35,10 +34,9 @@ class BaseShellOperator(object):
     ):
         """Constructor
 
-            :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record (can be `None`)
+        :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record (can be `None`)
         """
-        self._orig_cmd   = cmd
-        self._cmddict    = parse(cmd)
+        self._batcmd     = BatchCommand(cmd)
         self._out_recdef = out_record_def
         self._cwd        = cwd
         self._env        = env
@@ -47,7 +45,7 @@ class BaseShellOperator(object):
         if ignore_record_pat: BaseShellOperator._ignore_record_pat = ignore_record_pat
 
     @abstractmethod
-    def run(self, in_batches):
+    def run(self, in_batches):  # pragma: no cover
         """Run shell operator synchronously to eat `in_batches`
 
         :param in_batches: `tuple` of batches to process
@@ -55,11 +53,11 @@ class BaseShellOperator(object):
         pass
 
     @staticmethod
-    def _start_process(cmd_array, in_batches_src, out_batch_dest, cwd, env):
+    def _start_process(cmd_array, batch_to_file_s, batch_from_file, cwd, env):
         return Popen(
             cmd_array,
-            stdin  = PIPE if 'STDIN'  in [src[0] for src in in_batches_src] else None,  # [fix] - cmdparserと密結合すぎる
-            stdout = PIPE if 'STDOUT' == out_batch_dest[0]                  else None,
+            stdin  = PIPE if len([b2f for b2f in batch_to_file_s if b2f.is_stdin()]) else None,
+            stdout = PIPE if batch_from_file.is_stdout() else None,
             stderr = None,
             cwd = cwd,
             env = env,
@@ -74,35 +72,22 @@ class BaseShellOperator(object):
         return input_str
 
     @staticmethod
-    def _batches_to_file(in_record_sep, in_batches, in_batches_src):
+    def _batches_to_tmpfile(in_record_sep, in_batches, batch_to_file_s):
         """Create files to store in-batches contents (if necessary)"""
-        for i, in_src in enumerate(in_batches_src):
-            if in_src[0] == 'FILE':
-                (fd, path) = in_src[1]
-                with fdopen(fd, 'w') as f:
-                    input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep)
-                    f.write(input_str)
-
-    @staticmethod
-    def _batch_to_stdin(process, in_record_sep, in_batches, in_batches_src):
-        """Write in-batch contents to `process` 's stdin (if necessary)
-
-        :returns: True if stdin is used
-        """
-        for i, in_src in enumerate(in_batches_src):
-            if in_src[0] == 'STDIN':
+        for i, b2f in enumerate(batch_to_file_s):
+            if b2f.is_tmpfile():
                 input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep)
-                process.stdin.write(input_str)
-                process.stdin.flush()
-                return True
-        return False
+                b2f.write_tmpfile(input_str)
 
     @staticmethod
-    def _output_str_stdout(process):
-        process.stdout.flush()
-        output_str = process.stdout.read()
-        process.stdout.close()  # [fix] - 同期的な呼び出しならcloseしてもいいけど，daemonを考えるならcloseしないノリのメソッドにしたい
-        return output_str
+    def _batch_to_stdin(process, in_record_sep, in_batches, batch_to_file_s):
+        """Write in-batch contents to `process` 's stdin (if necessary)
+        """
+        for i, b2f in enumerate(batch_to_file_s):
+            if b2f.is_stdin():
+                input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep)
+                b2f.write_stdin(process.stdin, input_str)
+                break  # at most 1 batch_to_file can be from stdin
 
     @staticmethod
     def _out_str_to_batch(out_str, out_recdef, out_record_sep):
@@ -117,20 +102,3 @@ class BaseShellOperator(object):
 
         out_batch = Batch(tuple(out_recs))
         return out_batch
-
-    @staticmethod
-    def _close_stdin(process):
-        process.stdin.close()
-
-    @staticmethod
-    def _clean_in_files(in_batches_src):
-        for in_src in in_batches_src:
-            if in_src[0] == 'FILE':
-                (fd, path) = in_src[1]
-                remove(path)
-
-    @staticmethod
-    def _clean_out_file(out_batch_dest):
-        if out_batch_dest[0] == 'FILE':
-            (fd, path) = out_batch_dest[1]
-            remove(path)
