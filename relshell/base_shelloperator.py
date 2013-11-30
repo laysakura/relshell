@@ -7,6 +7,8 @@
 """
 from abc import ABCMeta, abstractmethod
 import shlex
+import os
+import fcntl
 from subprocess import Popen, PIPE
 from relshell.record import Record
 from relshell.batch import Batch
@@ -54,18 +56,24 @@ class BaseShellOperator(object):
         pass
 
     @staticmethod
-    def _start_process(batcmd, cwd, env):
+    def _start_process(batcmd, cwd, env, non_blocking_stdout=False):
         try:
-            return Popen(
+            p = Popen(
                 shlex.split(batcmd.sh_cmd),
                 stdin  = PIPE if batcmd.has_input_from_stdin() else None,
-                stdout = PIPE if batcmd.batch_from_file.is_stdout() else None,
+                stdout = PIPE if batcmd.batch_from_file and batcmd.batch_from_file.is_stdout() else None,
                 stderr = None,
                 cwd    = cwd,
                 env    = env,
+                bufsize = 1 if non_blocking_stdout else 0,
             )
         except OSError as e:
             raise OSError('Following command fails - %s:\n$ %s' % (e, batcmd.sh_cmd))
+
+        if non_blocking_stdout:
+            fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
+
+        return p
 
     @staticmethod
     def _input_str(in_batch, in_record_sep):

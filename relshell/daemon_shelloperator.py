@@ -7,8 +7,6 @@
 """
 import shlex
 import re
-import os
-import fcntl
 import time
 from subprocess import Popen, PIPE
 from relshell.base_shelloperator import BaseShellOperator
@@ -91,7 +89,9 @@ class DaemonShellOperator(BaseShellOperator):
         # prepare & start process (if necessary)
         BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
         if self._process is None:
-            self._process = DaemonShellOperator._start_process(self._batcmd, self._cwd, self._env)
+            self._process = BaseShellOperator._start_process(
+                self._batcmd, self._cwd, self._env,
+                non_blocking_stdout=True)
         BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
 
         # pass batch-done indicator
@@ -101,7 +101,6 @@ class DaemonShellOperator(BaseShellOperator):
         out_str_list = []
         while True:
             self._process.stdout.flush()
-            # stdout is set non-blocking in `DaemonShellOperator._start_process()`
             try:
                 out_str_list.append(self._process.stdout.read())
             except IOError:  # no character available from stdout
@@ -125,26 +124,6 @@ class DaemonShellOperator(BaseShellOperator):
 
     def getpid(self):
         return self._process.pid if self._process else None
-
-    @staticmethod
-    def _start_process(batcmd, cwd, env):
-        try:
-            # using non-blocking stdout w/ buffer size 1.
-            # See: http://stackoverflow.com/questions/8980050/persistent-python-subprocess
-            p = Popen(
-                shlex.split(batcmd.sh_cmd),
-                stdin   = PIPE if batcmd.has_input_from_stdin() else None,
-                stdout  = PIPE if batcmd.batch_from_file.is_stdout() else None,
-                stderr  = None,
-                cwd     = cwd,
-                env     = env,
-                bufsize = 1,
-            )
-        except OSError as e:
-            raise OSError('Following command fails - %s:\n$ %s' % (e, batcmd.sh_cmd))
-
-        fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
-        return p
 
     @staticmethod
     def _batch_done(process_output_str, batch_done_indicator):
