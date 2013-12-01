@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 from nose.tools import *
+from nose_parameterized import parameterized
 from relshell.recorddef import RecordDef
 from relshell.record import Record
 from relshell.batch import Batch
 from relshell.daemon_shelloperator import DaemonShellOperator
 
 
+def _simple_recdef():
+    return RecordDef([{'name': 'text', 'type': 'STRING'}])
+
+
 def _create_batch():
-    rdef = RecordDef([{'name': 'text', 'type': 'STRING'}])
+    rdef = _simple_recdef()
     return Batch((
         Record(rdef, 'test1'),
         Record(rdef, 'test2'),
@@ -42,23 +47,30 @@ def test_daemonized_process():
     ok_(op.getpid() is None)
 
 
+@parameterized([
+    # ( <simple command w/ RecordDef([{'name': 'text', 'type': 'STRING'}]) in/out> )
+    ('cat IN_BATCH0 > OUT_BATCH'),    # [todo] - currently input must be from stdin, but `tail` from file will be also supported
+])
 @raises(AttributeError)
-def test_daemon_shelloperator_constraints():
+def test_simple_operator_constraints(cmd):
     DaemonShellOperator(
-        'cat IN_BATCH0 > OUT_BATCH',    # [todo] - currently input must be from stdin, but `tail` from file will be also supported
-        out_record_def       = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        cmd,
+        out_record_def       = _simple_recdef(),
         batch_done_indicator = 'BATCH_SEPARATOR\n',
         batch_done_output    = 'BATCH_SEPARATOR\n',
     )
 
 
+@parameterized([
+    # ( <simple command w/ RecordDef([{'name': 'text', 'type': 'STRING'}]) in/out> )
+    ('wiredcmd < IN_BATCH0 > OUT_BATCH'),
+])
 @raises(OSError)
-def test_output_batch_error_cmd():
+def test_simple_operator_error_cmd(cmd):
     op = DaemonShellOperator(
-        'wiredcmd < IN_BATCH0',
-        out_record_def       = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        cmd,
+        out_record_def       = _simple_recdef(),
         batch_done_indicator = 'BATCH_SEPARATOR\n',
         batch_done_output    = 'BATCH_SEPARATOR\n',
     )
-    batch = _create_batch()
-    op.run(in_batches=(batch, ))
+    op.run(in_batches=(_create_batch(), ))
