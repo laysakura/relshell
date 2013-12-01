@@ -55,22 +55,6 @@ def test_simple_operator_batch_mismatch(cmd):
 
 @parameterized([
     # ( <simple command w/ RecordDef([{'name': 'text', 'type': 'STRING'}]) in/out> )
-    ('cat < IN_BATCH0 > OUT_BATCH'),
-    ('cat   IN_BATCH0 > OUT_BATCH'),
-])
-@raises(AttributeError)
-def test_simple_operator_batch_mismatch(cmd):
-    op = ShellOperator(
-        cmd,
-        out_record_def=_simple_recdef(),
-    )
-    in_batch0  = _create_batch()
-    in_batch1  = _create_batch()
-    op.run(in_batches=(in_batch0, in_batch1))
-
-
-@parameterized([
-    # ( <simple command w/ RecordDef([{'name': 'text', 'type': 'STRING'}]) in/out> )
     ('cat /no/such/file > OUT_BATCH'),
     ('wiredcmd > OUT_BATCH'),
 ])
