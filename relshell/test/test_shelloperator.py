@@ -25,7 +25,7 @@ def _create_batch():
     # ( <simple command w/ RecordDef([{'name': 'text', 'type': 'STRING'}]) in/out> )
     ('cat < IN_BATCH0 > OUT_BATCH'),
     ('cat   IN_BATCH0 > OUT_BATCH'),
-    # ('tee < IN_BATCH0 OUT_BATCH'),
+    ('tee < IN_BATCH0 OUT_BATCH'),
 ])
 def test_simple_operator(cmd):
     op = ShellOperator(

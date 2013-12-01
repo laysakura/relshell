@@ -72,9 +72,12 @@ class ShellOperator(BaseShellOperator):
         BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)
 
         if self._batcmd.batch_from_file.is_stdout():
-            out_str   = self._batcmd.batch_from_file.read_stdout(process.stdout)
-            out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
-            self._batcmd.batch_from_file.finish()
-            return out_batch
-        else:
-            raise NotImplementedError
+            out_str = self._batcmd.batch_from_file.read_stdout(process.stdout)
+        elif self._batcmd.batch_from_file.is_tmpfile():
+            out_str = self._batcmd.batch_from_file.read_tmpfile()
+        else:  # pragma: no cover
+            assert(False)
+
+        out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
+        self._batcmd.batch_from_file.finish()
+        return out_batch
