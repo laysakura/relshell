@@ -98,53 +98,47 @@ class BaseShellOperator(object):
                 break  # at most 1 batch_to_file can be from stdin
 
     @staticmethod
-    def _out_str_to_batch(out_str, out_recdef, out_col_pat):
-        print(out_str)
-        out_recs = []
-
-        # 1. out_col_patternsを使ってout_strから先頭一致していき，columnsを得る
-        # 2. out_col_patternsが尽きたら，それがrecord．すなわち，out_record_sepなんていらない．
+    def _parse_record(parsed_str, col_patterns, recdef):
+        col_strs = []
         pos = 0
-        while pos < len(out_str):
-            col_strs = []
-            for col_def in out_recdef:
-                col_name = col_def.name
-                col_pat = out_col_pat[col_name]
-                print('''Start matching ("%s"):%s
-[pattern] %s
-
-[output result]
-%s
-                    ''' % (col_name, os.linesep, col_pat.pattern, out_str[pos:]))
-                mat = col_pat.search(out_str[pos:])  # [fix] - creating new string... any efficient way?
-                if mat is None:
-                    warn('''Following string does not match `out_col_patterns`, ignored:
-%s''' % (out_str[pos:]))
-#                     raise AttributeError('''Following pattern of column "%s" doesn\'t match to output result.
-# [pattern]
-# %s
+        for col_def in recdef:
+            col_name = col_def.name
+            col_pat = col_patterns[col_name]
+#             print('''Start matching ("%s"):%s
+# [pattern] %s
 
 # [output result]
 # %s
-#                     ''' % (col_name, col_pat.pattern, out_str))
-                    break
+#                 ''' % (col_name, os.linesep, col_pat.pattern, parsed_str))
+            mat = col_pat.search(parsed_str[pos:])
 
-                print('match!! => %s' % (mat.group()))
-                pos = mat.end() + pos
-                col_strs.append(mat.group())
+            # no more record to parse
+            if mat is None:
+                warn('''Following string does not match `out_col_patterns`, ignored:
+%s''' % (parsed_str))
+                return (None, None)
 
-            if len(col_strs) == 0:  # after skipping last redundunt strs
+            # beginning substring is skipped
+            if mat.start() > 0:
+                warn('''Following string does is skipped:
+%s''' % (parsed_str[:mat.start()]))
+
+            # print('match!! => %s' % (mat.group()))
+            pos += mat.end()
+            col_strs.append(mat.group())
+
+        return (Record(recdef, *col_strs), pos)
+
+    @staticmethod
+    def _out_str_to_batch(out_str, out_recdef, out_col_patterns):
+        out_recs = []
+        pos = 0
+        while True:
+            (rec, rec_str_len) = BaseShellOperator._parse_record(out_str[pos:], out_col_patterns, out_recdef)
+            if rec is None:
                 break
-            out_recs.append(Record(out_recdef, *col_strs))   # [fix] - これも複雑なrecdefには対応できてない
-
-        # for rec_str in out_str.split(out_record_sep):
-        #     # ignore some string as record
-        #     pat = BaseShellOperator._ignore_record_pat
-        #     if pat and pat.match(rec_str):
-        #         continue
-
-        #     out_recs.append(Record(out_recdef, rec_str, 'hoge'))   # [fix] - これも複雑なrecdefには対応できてない
-
+            out_recs.append(rec)
+            pos += rec_str_len
         out_batch = Batch(tuple(out_recs))
         return out_batch
 
