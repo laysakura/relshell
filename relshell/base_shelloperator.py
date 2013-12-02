@@ -28,23 +28,28 @@ class BaseShellOperator(object):
         self,
         cmd,
         out_record_def,
+        success_exitcodes,
         cwd,
         env,
         in_record_sep,
         out_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
                          # [todo] - in_record_sepの方が入力Recordを文字列にする際のもので，out_record_sepの方が出力文字列をRecordにする際のもの
         ignore_record_pat,
+
+        out_col_patterns,
     ):
         """Constructor
 
         :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record (can be `None`)
         """
-        self._batcmd     = BatchCommand(cmd)
-        self._out_recdef = out_record_def
-        self._cwd        = cwd
-        self._env        = env
-        self._in_record_sep  = in_record_sep
-        self._out_record_sep = out_record_sep
+        self._batcmd            = BatchCommand(cmd)
+        self._out_recdef        = out_record_def
+        self._success_exitcodes = success_exitcodes
+        self._cwd               = cwd
+        self._env               = env
+        self._in_record_sep     = in_record_sep
+        self._out_record_sep    = out_record_sep
+        self._out_col_patterns  = out_col_patterns
         if ignore_record_pat: BaseShellOperator._ignore_record_pat = ignore_record_pat
 
     @abstractmethod
@@ -102,24 +107,55 @@ class BaseShellOperator(object):
                 break  # at most 1 batch_to_file can be from stdin
 
     @staticmethod
-    def _out_str_to_batch(out_str, out_recdef, out_record_sep):
+    def _out_str_to_batch(out_str, out_recdef, out_record_sep, out_col_pat):
+        print(out_str)
         out_recs = []
-        for rec_str in out_str.split(out_record_sep):
-            # ignore some string as record
-            pat = BaseShellOperator._ignore_record_pat
-            if pat and pat.match(rec_str):
-                continue
 
-            out_recs.append(Record(out_recdef, rec_str))   # これも複雑なrecdefには対応できてない
+        # 1. out_col_patternsを使ってout_strから先頭一致していき，columnsを得る
+        # 2. out_col_patternsが尽きたら，それがrecord．すなわち，out_record_sepなんていらない．
+        pos = 0
+        while pos < len(out_str):
+            col_strs = []
+            for col_def in out_recdef:
+                col_name = col_def.name
+                col_pat = out_col_pat[col_name]
+                print('''Start matching ("%s"):\n
+[pattern] %s
+
+[output result]
+%s
+                    ''' % (col_name, col_pat.pattern, out_str[pos:]))
+                mat = col_pat.search(out_str[pos:])  # [fix] - creating new string... any efficient way?
+                if mat is None:
+                    raise AttributeError('''Following pattern of column "%s" doesn\'t match to output result.
+[pattern]
+%s
+
+[output result]
+%s
+                    ''' % (col_name, col_pat.pattern, out_str))
+                print('match!! => %s' % (mat.group()))
+                pos = mat.end() + pos
+                col_strs.append(mat.group())
+
+            out_recs.append(Record(out_recdef, *col_strs))   # [fix] - これも複雑なrecdefには対応できてない
+
+        # for rec_str in out_str.split(out_record_sep):
+        #     # ignore some string as record
+        #     pat = BaseShellOperator._ignore_record_pat
+        #     if pat and pat.match(rec_str):
+        #         continue
+
+        #     out_recs.append(Record(out_recdef, rec_str, 'hoge'))   # [fix] - これも複雑なrecdefには対応できてない
 
         out_batch = Batch(tuple(out_recs))
         return out_batch
 
     @staticmethod
-    def _wait_process(process, sh_cmd):
+    def _wait_process(process, sh_cmd, success_exitcodes):
         exitcode = process.wait()    # [todo] - if this call does not return, it means 2nd `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_ are not sutisfied => raise `AttributeError`
-        if exitcode != 0:
-            raise OSError('Following command ended with exitcode %d:\n$%s' % (exitcode, sh_cmd))
+        if exitcode not in success_exitcodes:
+            raise OSError('Following command ended with exitcode %d:\n$ %s' % (exitcode, sh_cmd))
 
     @staticmethod
     def _close_process_input_stdin(batch_to_file_s):

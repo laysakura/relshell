@@ -27,12 +27,14 @@ class ShellOperator(BaseShellOperator):
         # non-kw & original param
 
         # kw & common w/ BaseShellOperator param
+        success_exitcodes=(0, ),
         cwd=None,
         env=None,
         in_record_sep='\n',
         out_record_sep='\n',  # [todo] - explain how this parameter is used (using diagram?)
                               # [todo] - in_record_sepの方が入力Recordを文字列にする際のもので，out_record_sepの方が出力文字列をRecordにする際のもの
-        ignore_record_pat=re.compile(r'^\s*$')
+        ignore_record_pat=re.compile(r'^\s*$'),
+        out_col_patterns=r'^.*$\n',
 
         # kw & original param
     ):
@@ -44,11 +46,13 @@ class ShellOperator(BaseShellOperator):
             self,
             cmd,
             out_record_def,
+            success_exitcodes,
             cwd,
             env,
             in_record_sep,
             out_record_sep,
             ignore_record_pat,
+            out_col_patterns,
         )
 
     def run(self, in_batches):
@@ -68,7 +72,7 @@ class ShellOperator(BaseShellOperator):
 
         # wait process & get its output
         BaseShellOperator._close_process_input_stdin(self._batcmd.batch_to_file_s)
-        BaseShellOperator._wait_process(process, self._batcmd.sh_cmd)
+        BaseShellOperator._wait_process(process, self._batcmd.sh_cmd, self._success_exitcodes)
         BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)
 
         if self._batcmd.batch_from_file.is_stdout():
@@ -78,6 +82,6 @@ class ShellOperator(BaseShellOperator):
         else:  # pragma: no cover
             assert(False)
 
-        out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
+        out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep, self._out_col_patterns)
         self._batcmd.batch_from_file.finish()
         return out_batch
