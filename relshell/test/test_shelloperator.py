@@ -13,11 +13,21 @@ def _simple_recdef():
 
 
 def _create_batch():
-    rdef = RecordDef([{'name': 'text', 'type': 'STRING'}])
+    rdef = _simple_recdef()
     return Batch((
         Record(rdef, 'test1'),
         Record(rdef, 'test2'),
         Record(rdef, 'test3'),
+        Record(rdef, 'test4'),
+    ))
+
+
+def _create_batch_sort_in():
+    rdef = _simple_recdef()
+    return Batch((
+        Record(rdef, 'test2'),
+        Record(rdef, 'test3'),
+        Record(rdef, 'test1'),
         Record(rdef, 'test4'),
     ))
 
@@ -65,7 +75,7 @@ def test_simple_operator_batch_mismatch(cmd):
 def test_simple_operator_error_cmd(cmd):
     op = ShellOperator(
         cmd,
-        out_record_def   = _simple_recdef,
+        out_record_def   = _simple_recdef(),
         out_col_patterns = {'text': re.compile(r'^.+$', re.MULTILINE)},
     )
     op.run(in_batches=())
@@ -74,7 +84,7 @@ def test_simple_operator_error_cmd(cmd):
 def test_output_batch_cascade():
     op = ShellOperator(
         'cat < IN_BATCH0 > OUT_BATCH',
-        out_record_def   = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        out_record_def   = _simple_recdef(),
         out_col_patterns = {'text': re.compile(r'^.+$', re.MULTILINE)},
     )
     batch_a = _create_batch()
@@ -86,22 +96,10 @@ def test_output_batch_cascade():
 def test_output_batch_sorted():
     op = ShellOperator(
         'sort < IN_BATCH0 > OUT_BATCH',
-        out_record_def   = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        out_record_def   = _simple_recdef(),
         out_col_patterns = {'text': re.compile(r'^.+$', re.MULTILINE)},
     )
-    rdef = RecordDef([{'name': 'text', 'type': 'STRING'}])
-    in_batch = Batch((
-        Record(rdef, 'test2'),
-        Record(rdef, 'test3'),
-        Record(rdef, 'test1'),
-        Record(rdef, 'test4'),
-    ))
-    sorted_batch = Batch((
-        Record(rdef, 'test1'),
-        Record(rdef, 'test2'),
-        Record(rdef, 'test3'),
-        Record(rdef, 'test4'),
-    ))
-    in_batch  = _create_batch()
-    out_batch = op.run(in_batches=(in_batch, ))
+    in_batch     = _create_batch_sort_in()
+    sorted_batch = _create_batch()
+    out_batch    = op.run(in_batches=(in_batch, ))
     eq_(out_batch, sorted_batch)
