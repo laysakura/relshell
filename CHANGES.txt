@@ -1,3 +1,6 @@
+0.1.1
+        - bugfix on DaemonShellOperator's batch_done_output management
+
 0.1.0
         - first working version
 
