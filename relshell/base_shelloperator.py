@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 import shlex
 import os
 import fcntl
+from warnings import warn
 from subprocess import Popen, PIPE
 from relshell.record import Record
 from relshell.batch import Batch
@@ -17,35 +18,29 @@ from relshell.batch_command import BatchCommand
 
 class BaseShellOperator(object):
     """BaseShellOperator
-
-    :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record
     """
     __metaclass__ = ABCMeta
-
-    _ignore_record_pat = None
 
     def __init__(
         self,
         cmd,
         out_record_def,
+        success_exitcodes,
         cwd,
         env,
-        in_record_sep,
-        out_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
-                         # [todo] - in_record_sepの方が入力Recordを文字列にする際のもので，out_record_sepの方が出力文字列をRecordにする際のもの
-        ignore_record_pat,
+        in_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
+
+        out_col_patterns,
     ):
         """Constructor
-
-        :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record (can be `None`)
         """
-        self._batcmd     = BatchCommand(cmd)
-        self._out_recdef = out_record_def
-        self._cwd        = cwd
-        self._env        = env
-        self._in_record_sep  = in_record_sep
-        self._out_record_sep = out_record_sep
-        if ignore_record_pat: BaseShellOperator._ignore_record_pat = ignore_record_pat
+        self._batcmd            = BatchCommand(cmd)
+        self._out_recdef        = out_record_def
+        self._success_exitcodes = success_exitcodes
+        self._cwd               = cwd
+        self._env               = env
+        self._in_record_sep     = in_record_sep
+        self._out_col_patterns  = out_col_patterns
 
     @abstractmethod
     def run(self, in_batches):  # pragma: no cover
@@ -68,7 +63,7 @@ class BaseShellOperator(object):
                 bufsize = 1 if non_blocking_stdout else 0,
             )
         except OSError as e:
-            raise OSError('Following command fails - %s:\n$ %s' % (e, batcmd.sh_cmd))
+            raise OSError('Following command fails - %s:%s %s' % (e, os.linesep, batcmd.sh_cmd))
 
         if non_blocking_stdout:
             fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
@@ -81,6 +76,7 @@ class BaseShellOperator(object):
         for i, record in enumerate(in_batch):
             input_str_list.append(record[0])   # [fix] - 複雑なrecorddefに対応してない
             input_str_list.append(in_record_sep)
+        input_str_list[-1] = os.linesep   # remove last in_record_sep & adds newline at last (since POSIX requires it)
         return ''.join(input_str_list)
 
     @staticmethod
@@ -102,24 +98,55 @@ class BaseShellOperator(object):
                 break  # at most 1 batch_to_file can be from stdin
 
     @staticmethod
-    def _out_str_to_batch(out_str, out_recdef, out_record_sep):
+    def _parse_record(str_to_parse, col_patterns, recdef):
+        col_strs = []
+        pos = 0
+        for col_def in recdef:
+            col_name = col_def.name
+            col_pat  = col_patterns[col_name]
+#             print('''Start matching ("%s"):%s
+# [pattern] %s
+
+# [output result]
+# %s
+#                 ''' % (col_name, os.linesep, col_pat.pattern, str_to_parse))
+            mat = col_pat.search(str_to_parse[pos:])
+
+            # no more record to parse
+            if mat is None:
+                warn('''Following string does not match `out_col_patterns`, ignored:
+%s''' % (str_to_parse))
+                return (None, None)
+
+            # beginning substring is skipped
+            if mat.start() > 0:
+                warn('''Following string does is skipped:
+%s''' % (str_to_parse[:mat.start()]))
+
+            # print('match!! => %s' % (mat.group()))
+            pos += mat.end()
+            col_strs.append(mat.group())
+
+        return (Record(recdef, *col_strs), pos)
+
+    @staticmethod
+    def _out_str_to_batch(out_str, out_recdef, out_col_patterns):
         out_recs = []
-        for rec_str in out_str.split(out_record_sep):
-            # ignore some string as record
-            pat = BaseShellOperator._ignore_record_pat
-            if pat and pat.match(rec_str):
-                continue
-
-            out_recs.append(Record(out_recdef, rec_str))   # これも複雑なrecdefには対応できてない
-
+        pos = 0
+        while True:
+            (rec, rec_str_len) = BaseShellOperator._parse_record(out_str[pos:], out_col_patterns, out_recdef)
+            if rec is None:
+                break
+            out_recs.append(rec)
+            pos += rec_str_len
         out_batch = Batch(tuple(out_recs))
         return out_batch
 
     @staticmethod
-    def _wait_process(process, sh_cmd):
+    def _wait_process(process, sh_cmd, success_exitcodes):
         exitcode = process.wait()    # [todo] - if this call does not return, it means 2nd `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_ are not sutisfied => raise `AttributeError`
-        if exitcode != 0:
-            raise OSError('Following command ended with exitcode %d:\n$%s' % (exitcode, sh_cmd))
+        if exitcode not in success_exitcodes:
+            raise OSError('Following command ended with exitcode %d:%s$ %s' % (exitcode, os.linesep, sh_cmd))
 
     @staticmethod
     def _close_process_input_stdin(batch_to_file_s):

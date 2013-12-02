@@ -6,6 +6,7 @@
     :synopsis: Parses shell command w/ BATCH management
 """
 import shlex
+import os
 import re
 from relshell.batch_to_file import BatchToFile
 from relshell.batch_from_file import BatchFromFile
@@ -121,8 +122,8 @@ class BatchCommand(object):
                 batch_idx = int(mat.group(1))
                 if batch_idx in in_batches_cmdidx_dict:
                     raise IndexError(
-                        'IN_BATCH%d is used multiple times in command below, while IN_BATCH0 - IN_BATCH%d must be used:\n$ %s' %
-                        (batch_idx, len(in_batches_cmdidx_dict) - 1, ' '.join(cmd_array)))
+                        'IN_BATCH%d is used multiple times in command below, while IN_BATCH0 - IN_BATCH%d must be used:%s$ %s' %
+                        (batch_idx, len(in_batches_cmdidx_dict) - 1, os.linesep, ' '.join(cmd_array)))
                 in_batches_cmdidx_dict[batch_idx] = cmdidx
 
         in_batches_cmdidx = []
@@ -131,8 +132,8 @@ class BatchCommand(object):
                 cmdidx = in_batches_cmdidx_dict[batch_idx]
                 in_batches_cmdidx.append(cmdidx)
             except KeyError:
-                raise IndexError('IN_BATCH%d is not found in command below, while IN_BATCH0 - IN_BATCH%d must be used:\n$ %s' %
-                                 (batch_idx, len(in_batches_cmdidx_dict) - 1, ' '.join(cmd_array)))
+                raise IndexError('IN_BATCH%d is not found in command below, while IN_BATCH0 - IN_BATCH%d must be used:%s$ %s' %
+                                 (batch_idx, len(in_batches_cmdidx_dict) - 1, os.linesep, ' '.join(cmd_array)))
 
         return tuple(in_batches_cmdidx)
 
@@ -149,7 +150,7 @@ class BatchCommand(object):
             if mat:
                 if out_batch_cmdidx:
                     raise IndexError(
-                        'OUT_BATCH is used multiple times in command below:\n$ %s' %
-                        (' '.join(cmd_array)))
+                        'OUT_BATCH is used multiple times in command below:%s$ %s' %
+                        (os.linesep, ' '.join(cmd_array)))
                 out_batch_cmdidx = cmdidx
         return out_batch_cmdidx

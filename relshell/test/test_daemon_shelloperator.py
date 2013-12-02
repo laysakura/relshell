@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from nose.tools import *
 from nose_parameterized import parameterized
+import re
 from relshell.recorddef import RecordDef
 from relshell.record import Record
 from relshell.batch import Batch
@@ -25,6 +26,7 @@ def test_daemonized_process():
     op = DaemonShellOperator(
         'cat < IN_BATCH0 > OUT_BATCH',
         out_record_def       = RecordDef([{'name': 'text', 'type': 'STRING'}]),
+        out_col_patterns     = {'text': re.compile(r'^.+$', re.MULTILINE)},
         batch_done_indicator = 'BATCH_DONE\n',
         batch_done_output    = 'BATCH_DONE\n',
     )
@@ -56,6 +58,7 @@ def test_simple_operator_constraints(cmd):
     DaemonShellOperator(
         cmd,
         out_record_def       = _simple_recdef(),
+        out_col_patterns     = {'text': re.compile(r'^.+$', re.MULTILINE)},
         batch_done_indicator = 'BATCH_SEPARATOR\n',
         batch_done_output    = 'BATCH_SEPARATOR\n',
     )
@@ -70,6 +73,7 @@ def test_simple_operator_error_cmd(cmd):
     op = DaemonShellOperator(
         cmd,
         out_record_def       = _simple_recdef(),
+        out_col_patterns     = {'text': re.compile(r'^.+$', re.MULTILINE)},
         batch_done_indicator = 'BATCH_SEPARATOR\n',
         batch_done_output    = 'BATCH_SEPARATOR\n',
     )

@@ -7,6 +7,7 @@
 
     A `Batch` is passed to an operator at-a-time internally.
 """
+import os
 
 
 class Batch(object):
@@ -33,10 +34,10 @@ class Batch(object):
         return next(self._records_iter)
 
     def __str__(self):
-        ret_str_list = ['(\n']
+        ret_str_list = [os.linesep]
         for i in xrange(len(self._records)):
-            ret_str_list.append('    %s\n' % (self._records[i]))
-        ret_str_list.append(')\n')
+            ret_str_list.append('    %s%s' % (self._records[i], os.linesep))
+        ret_str_list.append(')%s' % (os.linesep))
         return ''.join(ret_str_list)
 
     def __eq__(self, other):

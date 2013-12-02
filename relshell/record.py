@@ -29,8 +29,9 @@ class Record(object):
         """Returns string representation of record"""
         retstr_list = ['(']
         for i in xrange(len(self._rec)):
-            retstr_list.append('%s: %s, ' % (self._recdef[i].name, self._rec[i]))
-        return retstr_list.append(')')
+            retstr_list.append('"%s": "%s", ' % (self._recdef[i].name, self._rec[i]))
+        retstr_list.append(')')
+        return ''.join(retstr_list)
 
     def __len__(self):
         """Returns number of columns in record"""

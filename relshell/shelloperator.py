@@ -5,17 +5,13 @@
 
     :synopsis: Provides `ShellOperator`
 """
-import re
+import os
 from relshell.base_shelloperator import BaseShellOperator
 
 
 class ShellOperator(BaseShellOperator):
     """ShellOperator
-
-    :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record
     """
-
-    _ignore_record_pat = None
 
     def __init__(
         self,
@@ -25,30 +21,27 @@ class ShellOperator(BaseShellOperator):
         out_record_def,
 
         # non-kw & original param
+        out_col_patterns,
 
         # kw & common w/ BaseShellOperator param
+        success_exitcodes=(0, ),
         cwd=None,
         env=None,
-        in_record_sep='\n',
-        out_record_sep='\n',  # [todo] - explain how this parameter is used (using diagram?)
-                              # [todo] - in_record_sepの方が入力Recordを文字列にする際のもので，out_record_sepの方が出力文字列をRecordにする際のもの
-        ignore_record_pat=re.compile(r'^\s*$')
+        in_record_sep=os.linesep,
 
         # kw & original param
     ):
         """Constructor
-
-            :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record (can be `None`)
         """
         BaseShellOperator.__init__(
             self,
             cmd,
             out_record_def,
+            success_exitcodes,
             cwd,
             env,
             in_record_sep,
-            out_record_sep,
-            ignore_record_pat,
+            out_col_patterns,
         )
 
     def run(self, in_batches):
@@ -58,8 +51,8 @@ class ShellOperator(BaseShellOperator):
         """
         if len(in_batches) != len(self._batcmd.batch_to_file_s):
             BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
-            raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:\n$ %s' %
-                                 (len(in_batches), len(self._batcmd.batch_to_file_s), self._batcmd.sh_cmd))
+            raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:%s$ %s' %
+                                 (len(in_batches), len(self._batcmd.batch_to_file_s), os.linesep, self._batcmd.sh_cmd))
 
         # prepare & start process
         BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
@@ -68,7 +61,7 @@ class ShellOperator(BaseShellOperator):
 
         # wait process & get its output
         BaseShellOperator._close_process_input_stdin(self._batcmd.batch_to_file_s)
-        BaseShellOperator._wait_process(process, self._batcmd.sh_cmd)
+        BaseShellOperator._wait_process(process, self._batcmd.sh_cmd, self._success_exitcodes)
         BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)
 
         if self._batcmd.batch_from_file.is_stdout():
@@ -78,6 +71,6 @@ class ShellOperator(BaseShellOperator):
         else:  # pragma: no cover
             assert(False)
 
-        out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep)
+        out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_col_patterns)
         self._batcmd.batch_from_file.finish()
         return out_batch
