@@ -47,4 +47,11 @@ TODO
 
 - relshellプロセス ===(thread)===> シェルオペレータ ===(fork)===> シェルコマンドプロセス という流れを作る(Queueもいるね)
 - shellstreaming/README.rst にあるような感じで，batchをop間でやりとりできるようにする
-- Batchはimmutableなんだから，排他制御のためにQueueを使ったりする必要は本来ないはず．tupleで十分
+- シェルプロセスは非同期でも扱いたい．そもそもpopenとかがそういうインターフェースだし．
+
+- デバッグオプションをonにしたらどんな動作しているのかくらい出力してあげたい
+
+- daemonizeできる条件
+  - in_batchをstdinからとり，out_batchを(stdout|file)に出す
+  - 「in_batch_xに対する出力分out_batch_xがここまでですよ」と定義できる(例えば，空行はout_batch_xの終わりですよ，とか)
+    - enjuには使える

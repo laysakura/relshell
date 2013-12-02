@@ -8,7 +8,7 @@
 import types
 
 
-class Type:
+class Type(object):
     """Types of columns."""
 
     _typemap = {

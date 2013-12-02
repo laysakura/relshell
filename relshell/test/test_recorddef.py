@@ -53,3 +53,30 @@ def test_recorddef_type_invalid():
             'type': 'SUPER_TYPE'
         },
     ])
+
+
+def test_recorddef_equality():
+    rdef0 = RecordDef([
+        {
+            'name': 'col0',
+            'type': 'STRING',
+        },
+    ])
+    rdef1 = RecordDef([
+        {
+            'type': 'STRING',
+            'name': 'col0',
+        },
+    ])
+    rdef2 = RecordDef([
+        {
+            'name': 'col0',
+            'type': 'STRING'
+        },
+        {
+            'name': 'col1',
+            'type': 'STRING'
+        },
+    ])
+    ok_(rdef0 == rdef1)
+    ok_(rdef0 != rdef2)

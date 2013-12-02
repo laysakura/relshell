@@ -19,6 +19,7 @@ setup(
         'nose',
         'coverage',
         'nose-cov',
+        'nose-parameterized',
     ],
     packages         = [
         'relshell',

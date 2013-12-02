@@ -27,10 +27,11 @@ class Record(object):
 
     def __str__(self):
         """Returns string representation of record"""
-        retstr = "("
+        retstr_list = ['(']
         for i in xrange(len(self._rec)):
-            retstr += "%s: %s, " % (self._recdef[i].name, self._rec[i])
-        return retstr + ")"
+            retstr_list.append('"%s": "%s", ' % (self._recdef[i].name, self._rec[i]))
+        retstr_list.append(')')
+        return ''.join(retstr_list)
 
     def __len__(self):
         """Returns number of columns in record"""
@@ -54,6 +55,12 @@ class Record(object):
         col = self._rec[self._cur_col]
         self._cur_col += 1
         return col
+
+    def __eq__(self, other):
+        return self._rec == other._rec and self._recdef == other._recdef
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     # Private functions
     @staticmethod
