@@ -106,10 +106,11 @@ class DaemonShellOperator(BaseShellOperator):
                 out_str_list.append(self._process.stdout.read())
             except IOError:  # no character available from stdout
                 time.sleep(1e-3)
-            if DaemonShellOperator._batch_done(''.join(out_str_list), self._batch_done_indicator):
+            batch_done_output_spos = DaemonShellOperator._batch_done_start_pos(''.join(out_str_list), self._batch_done_output)
+            if batch_done_output_spos >= 0:
                 break
         out_str = ''.join(out_str_list)
-        out_batch = BaseShellOperator._out_str_to_batch(out_str[:-(len(self._batch_done_indicator))],
+        out_batch = BaseShellOperator._out_str_to_batch(out_str[:batch_done_output_spos],
                                                         self._out_recdef, self._out_col_patterns)
         return out_batch
 
@@ -127,6 +128,5 @@ class DaemonShellOperator(BaseShellOperator):
         return self._process.pid if self._process else None
 
     @staticmethod
-    def _batch_done(process_output_str, batch_done_indicator):
-        mat_idx = process_output_str.rfind(batch_done_indicator)
-        return mat_idx >= 0 and mat_idx + len(batch_done_indicator) == len(process_output_str)
+    def _batch_done_start_pos(process_output_str, batch_done_output):
+        return process_output_str.rfind(batch_done_output)
