@@ -9,7 +9,7 @@ setup(
     long_description = open('README.rst').read(),
     url              = 'https://github.com/laysakura/relshell',
     license          = 'LICENSE.txt',
-    version          = '0.0.2',
+    version          = '0.1.0',
     author           = 'Sho Nakatani',
     author_email     = 'lay.sakura@gmail.com',
     test_suite       = 'nose.collector',
@@ -29,9 +29,11 @@ setup(
     ],
     classifiers      = '''
 Programming Language :: Python
-Development Status :: 1 - Planning
+Development Status :: 4 - Beta
 License :: OSI Approved :: Apache Software License
+Programming Language :: Python :: 2.6
 Programming Language :: Python :: 2.7
+Programming Language :: Python :: Implementation :: PyPy
 Operating System :: POSIX :: Linux
 '''.strip().splitlines()
 )
