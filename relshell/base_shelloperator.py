@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 import shlex
 import os
 import fcntl
+from warnings import warn
 from subprocess import Popen, PIPE
 from relshell.record import Record
 from relshell.batch import Batch
@@ -17,12 +18,8 @@ from relshell.batch_command import BatchCommand
 
 class BaseShellOperator(object):
     """BaseShellOperator
-
-    :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record
     """
     __metaclass__ = ABCMeta
-
-    _ignore_record_pat = None
 
     def __init__(
         self,
@@ -32,13 +29,10 @@ class BaseShellOperator(object):
         cwd,
         env,
         in_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
-        ignore_record_pat,
 
         out_col_patterns,
     ):
         """Constructor
-
-        :param ignore_record_pat: ignore string which match w/ `ignore_record_pat` will not be output as record (can be `None`)
         """
         self._batcmd            = BatchCommand(cmd)
         self._out_recdef        = out_record_def
@@ -47,7 +41,6 @@ class BaseShellOperator(object):
         self._env               = env
         self._in_record_sep     = in_record_sep
         self._out_col_patterns  = out_col_patterns
-        if ignore_record_pat: BaseShellOperator._ignore_record_pat = ignore_record_pat
 
     @abstractmethod
     def run(self, in_batches):  # pragma: no cover
@@ -70,7 +63,7 @@ class BaseShellOperator(object):
                 bufsize = 1 if non_blocking_stdout else 0,
             )
         except OSError as e:
-            raise OSError('Following command fails - %s:\n$ %s' % (e, batcmd.sh_cmd))
+            raise OSError('Following command fails - %s:%s %s' % (e, os.linesep, batcmd.sh_cmd))
 
         if non_blocking_stdout:
             fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
@@ -83,6 +76,7 @@ class BaseShellOperator(object):
         for i, record in enumerate(in_batch):
             input_str_list.append(record[0])   # [fix] - 複雑なrecorddefに対応してない
             input_str_list.append(in_record_sep)
+        input_str_list[-1] = os.linesep   # remove last in_record_sep & adds newline at last (since POSIX requires it)
         return ''.join(input_str_list)
 
     @staticmethod
@@ -116,25 +110,31 @@ class BaseShellOperator(object):
             for col_def in out_recdef:
                 col_name = col_def.name
                 col_pat = out_col_pat[col_name]
-                print('''Start matching ("%s"):\n
+                print('''Start matching ("%s"):%s
 [pattern] %s
 
 [output result]
 %s
-                    ''' % (col_name, col_pat.pattern, out_str[pos:]))
+                    ''' % (col_name, os.linesep, col_pat.pattern, out_str[pos:]))
                 mat = col_pat.search(out_str[pos:])  # [fix] - creating new string... any efficient way?
                 if mat is None:
-                    raise AttributeError('''Following pattern of column "%s" doesn\'t match to output result.
-[pattern]
-%s
+                    warn('''Following string does not match `out_col_patterns`, ignored:
+%s''' % (out_str[pos:]))
+#                     raise AttributeError('''Following pattern of column "%s" doesn\'t match to output result.
+# [pattern]
+# %s
 
-[output result]
-%s
-                    ''' % (col_name, col_pat.pattern, out_str))
+# [output result]
+# %s
+#                     ''' % (col_name, col_pat.pattern, out_str))
+                    break
+
                 print('match!! => %s' % (mat.group()))
                 pos = mat.end() + pos
                 col_strs.append(mat.group())
 
+            if len(col_strs) == 0:  # after skipping last redundunt strs
+                break
             out_recs.append(Record(out_recdef, *col_strs))   # [fix] - これも複雑なrecdefには対応できてない
 
         # for rec_str in out_str.split(out_record_sep):
@@ -152,7 +152,7 @@ class BaseShellOperator(object):
     def _wait_process(process, sh_cmd, success_exitcodes):
         exitcode = process.wait()    # [todo] - if this call does not return, it means 2nd `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_ are not sutisfied => raise `AttributeError`
         if exitcode not in success_exitcodes:
-            raise OSError('Following command ended with exitcode %d:\n$ %s' % (exitcode, sh_cmd))
+            raise OSError('Following command ended with exitcode %d:%s$ %s' % (exitcode, os.linesep, sh_cmd))
 
     @staticmethod
     def _close_process_input_stdin(batch_to_file_s):

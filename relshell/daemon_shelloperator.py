@@ -5,10 +5,9 @@
 
     :synopsis: Provides `DaemonShellOperator`
 """
-import shlex
+import os
 import re
 import time
-from subprocess import Popen, PIPE
 from relshell.base_shelloperator import BaseShellOperator
 
 
@@ -46,8 +45,8 @@ class DaemonShellOperator(BaseShellOperator):
         # kw & common w/ BaseShellOperator param
         cwd=None,
         env=None,
-        in_record_sep='\n',
-        out_record_sep='\n',
+        in_record_sep=os.linesep,
+        out_record_sep=os.linesep,
         ignore_record_pat=re.compile(r'^\s*$'),
 
         # kw & original param
@@ -73,8 +72,8 @@ class DaemonShellOperator(BaseShellOperator):
 
         if not self._batcmd.has_input_from_stdin():
             BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
-            raise AttributeError('Following command doesn\'t have input from stdin:\n$ %s' %
-                                 (self._batcmd.sh_cmd))
+            raise AttributeError('Following command doesn\'t have input from stdin:%s$ %s' %
+                                 (os.linesep, self._batcmd.sh_cmd))
 
     def run(self, in_batches):
         """Run shell operator synchronously to eat `in_batches`
@@ -83,8 +82,8 @@ class DaemonShellOperator(BaseShellOperator):
         """
         if len(in_batches) != len(self._batcmd.batch_to_file_s):
             BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
-            raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:\n$ %s' %
-                                 (len(in_batches), len(self._batcmd.batch_to_file_s), self._batcmd.sh_cmd))
+            raise AttributeError('len(in_batches) == %d, while %d IN_BATCH* are specified in command below:%s$ %s' %
+                                 (len(in_batches), len(self._batcmd.batch_to_file_s), os.linesep, self._batcmd.sh_cmd))
 
         # prepare & start process (if necessary)
         BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
