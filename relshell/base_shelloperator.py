@@ -98,30 +98,30 @@ class BaseShellOperator(object):
                 break  # at most 1 batch_to_file can be from stdin
 
     @staticmethod
-    def _parse_record(parsed_str, col_patterns, recdef):
+    def _parse_record(str_to_parse, col_patterns, recdef):
         col_strs = []
         pos = 0
         for col_def in recdef:
             col_name = col_def.name
-            col_pat = col_patterns[col_name]
+            col_pat  = col_patterns[col_name]
 #             print('''Start matching ("%s"):%s
 # [pattern] %s
 
 # [output result]
 # %s
-#                 ''' % (col_name, os.linesep, col_pat.pattern, parsed_str))
-            mat = col_pat.search(parsed_str[pos:])
+#                 ''' % (col_name, os.linesep, col_pat.pattern, str_to_parse))
+            mat = col_pat.search(str_to_parse[pos:])
 
             # no more record to parse
             if mat is None:
                 warn('''Following string does not match `out_col_patterns`, ignored:
-%s''' % (parsed_str))
+%s''' % (str_to_parse))
                 return (None, None)
 
             # beginning substring is skipped
             if mat.start() > 0:
                 warn('''Following string does is skipped:
-%s''' % (parsed_str[:mat.start()]))
+%s''' % (str_to_parse[:mat.start()]))
 
             # print('match!! => %s' % (mat.group()))
             pos += mat.end()
