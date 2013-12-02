@@ -1,10 +1,29 @@
 # -*- coding: utf-8 -*-
 from nose.tools import *
+import os
+import tempfile
 import re
 from relshell.recorddef import RecordDef
 from relshell.record import Record
 from relshell.batch import Batch
 from relshell.shelloperator import ShellOperator
+
+
+n_tmpfile = 0
+
+
+def setup():
+    global n_tmpfile
+    n_tmpfile = _get_num_tmpfile()
+
+
+def teardown():
+    global n_tmpfile
+    eq_(_get_num_tmpfile(), n_tmpfile, 'Number of relshell tmpfile is not changed during test')
+
+
+def _get_num_tmpfile():
+    return len([tmp for tmp in os.listdir(tempfile.gettempdir()) if tmp.startswith('relshell-') and tmp.endswith('.batch')])
 
 
 def _simple_recdef():
