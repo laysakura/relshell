@@ -39,15 +39,16 @@ class DaemonShellOperator(BaseShellOperator):
         out_record_def,
 
         # non-kw & original param
+        out_col_patterns,
         batch_done_indicator,
         batch_done_output,
 
         # kw & common w/ BaseShellOperator param
+        success_exitcodes=(0, ),
         cwd=None,
         env=None,
         in_record_sep=os.linesep,
         out_record_sep=os.linesep,
-        ignore_record_pat=re.compile(r'^\s*$'),
 
         # kw & original param
    ):
@@ -59,11 +60,11 @@ class DaemonShellOperator(BaseShellOperator):
             self,
             cmd,
             out_record_def,
+            success_exitcodes,
             cwd,
             env,
             in_record_sep,
-            out_record_sep,
-            ignore_record_pat,
+            out_col_patterns,
         )
 
         self._batch_done_indicator = batch_done_indicator
@@ -108,7 +109,7 @@ class DaemonShellOperator(BaseShellOperator):
                 break
         out_str = ''.join(out_str_list)
         out_batch = BaseShellOperator._out_str_to_batch(out_str[:-(len(self._batch_done_indicator))],
-                                                        self._out_recdef, self._out_record_sep)
+                                                        self._out_recdef, self._out_col_patterns)
         return out_batch
 
     def kill(self):
@@ -117,7 +118,7 @@ class DaemonShellOperator(BaseShellOperator):
         :raises: `AttributeError` if instanciated process doesn't seem to satisfy `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_
         """
         BaseShellOperator._close_process_input_stdin(self._batcmd.batch_to_file_s)
-        BaseShellOperator._wait_process(self._process, self._batcmd.sh_cmd)
+        BaseShellOperator._wait_process(self._process, self._batcmd.sh_cmd, self._success_exitcodes)
         BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)
         self._process = None
 

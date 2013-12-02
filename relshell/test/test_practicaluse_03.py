@@ -92,14 +92,3 @@ def test_output_2in_1out():
             ),
         ))
     )
-
-
-def test_output_batch_cascade():
-    op = ShellOperator(
-        'cat < IN_BATCH0 > OUT_BATCH',
-        out_record_def=RecordDef([{'name': 'text', 'type': 'STRING'}]),
-        out_col_patterns={'text': re.compile(r'^.+$', re.MULTILINE)},
-    )
-    batch_a = _create_batch()
-    batch_b = op.run(in_batches=(batch_a, ))
-    eq_(batch_b, batch_a)
