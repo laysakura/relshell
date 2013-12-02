@@ -28,6 +28,7 @@ class ShellOperator(BaseShellOperator):
         cwd=None,
         env=None,
         in_record_sep=os.linesep,
+        in_column_sep=' ',
 
         # kw & original param
     ):
@@ -41,6 +42,7 @@ class ShellOperator(BaseShellOperator):
             cwd,
             env,
             in_record_sep,
+            in_column_sep,
             out_col_patterns,
         )
 
@@ -55,9 +57,9 @@ class ShellOperator(BaseShellOperator):
                                  (len(in_batches), len(self._batcmd.batch_to_file_s), os.linesep, self._batcmd.sh_cmd))
 
         # prepare & start process
-        BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
+        BaseShellOperator._batches_to_tmpfile(self._in_record_sep, self._in_column_sep, in_batches, self._batcmd.batch_to_file_s)
         process = BaseShellOperator._start_process(self._batcmd, self._cwd, self._env)
-        BaseShellOperator._batch_to_stdin(process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
+        BaseShellOperator._batch_to_stdin(process, self._in_record_sep, self._in_column_sep, in_batches, self._batcmd.batch_to_file_s)
 
         # wait process & get its output
         BaseShellOperator._close_process_input_stdin(self._batcmd.batch_to_file_s)

@@ -29,6 +29,7 @@ class BaseShellOperator(object):
         cwd,
         env,
         in_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
+        in_column_sep,
 
         out_col_patterns,
     ):
@@ -40,6 +41,7 @@ class BaseShellOperator(object):
         self._cwd               = cwd
         self._env               = env
         self._in_record_sep     = in_record_sep
+        self._in_column_sep     = in_column_sep
         self._out_col_patterns  = out_col_patterns
 
     @abstractmethod
@@ -63,7 +65,7 @@ class BaseShellOperator(object):
                 bufsize = 1 if non_blocking_stdout else 0,
             )
         except OSError as e:
-            raise OSError('Following command fails - %s:%s %s' % (e, os.linesep, batcmd.sh_cmd))
+            raise OSError('Following command fails - %s:%s$ %s' % (e, os.linesep, batcmd.sh_cmd))
 
         if non_blocking_stdout:
             fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
@@ -71,29 +73,32 @@ class BaseShellOperator(object):
         return p
 
     @staticmethod
-    def _input_str(in_batch, in_record_sep):
+    def _input_str(in_batch, in_record_sep, in_column_sep):
         input_str_list = []
         for i, record in enumerate(in_batch):
-            input_str_list.append(record[0])   # [fix] - 複雑なrecorddefに対応してない
+            for col in record:
+                input_str_list.append(str(col))
+                input_str_list.append(in_column_sep)
+            del input_str_list[-1]        # remove last in_column_sep
             input_str_list.append(in_record_sep)
         input_str_list[-1] = os.linesep   # remove last in_record_sep & adds newline at last (since POSIX requires it)
         return ''.join(input_str_list)
 
     @staticmethod
-    def _batches_to_tmpfile(in_record_sep, in_batches, batch_to_file_s):
+    def _batches_to_tmpfile(in_record_sep, in_column_sep, in_batches, batch_to_file_s):
         """Create files to store in-batches contents (if necessary)"""
         for i, b2f in enumerate(batch_to_file_s):
             if b2f.is_tmpfile():
-                input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep)
+                input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep, in_column_sep)
                 b2f.write_tmpfile(input_str)
 
     @staticmethod
-    def _batch_to_stdin(process, in_record_sep, in_batches, batch_to_file_s):
+    def _batch_to_stdin(process, in_record_sep, in_column_sep, in_batches, batch_to_file_s):
         """Write in-batch contents to `process` 's stdin (if necessary)
         """
         for i, b2f in enumerate(batch_to_file_s):
             if b2f.is_stdin():
-                input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep)
+                input_str = BaseShellOperator._input_str(in_batches[i], in_record_sep, in_column_sep)
                 b2f.write_stdin(process.stdin, input_str)
                 break  # at most 1 batch_to_file can be from stdin
 

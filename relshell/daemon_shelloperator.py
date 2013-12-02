@@ -48,7 +48,7 @@ class DaemonShellOperator(BaseShellOperator):
         cwd=None,
         env=None,
         in_record_sep=os.linesep,
-        out_record_sep=os.linesep,
+        in_column_sep=' ',
 
         # kw & original param
    ):
@@ -64,6 +64,7 @@ class DaemonShellOperator(BaseShellOperator):
             cwd,
             env,
             in_record_sep,
+            in_column_sep,
             out_col_patterns,
         )
 
@@ -87,12 +88,12 @@ class DaemonShellOperator(BaseShellOperator):
                                  (len(in_batches), len(self._batcmd.batch_to_file_s), os.linesep, self._batcmd.sh_cmd))
 
         # prepare & start process (if necessary)
-        BaseShellOperator._batches_to_tmpfile(self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
+        BaseShellOperator._batches_to_tmpfile(self._in_record_sep, self._in_column_sep, in_batches, self._batcmd.batch_to_file_s)
         if self._process is None:
             self._process = BaseShellOperator._start_process(
                 self._batcmd, self._cwd, self._env,
                 non_blocking_stdout=True)
-        BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, in_batches, self._batcmd.batch_to_file_s)
+        BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, self._in_column_sep, in_batches, self._batcmd.batch_to_file_s)
 
         # pass batch-done indicator
         self._process.stdin.write(self._batch_done_indicator)
