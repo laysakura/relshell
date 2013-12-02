@@ -66,6 +66,24 @@ def test_simple_operator_constraints(cmd):
 
 @parameterized([
     # ( <simple command w/ RecordDef([{'name': 'text', 'type': 'STRING'}]) in/out> )
+    ('cat < IN_BATCH0 > OUT_BATCH'),
+])
+@raises(AttributeError)
+def test_simple_operator_batch_mismatch(cmd):
+    op = DaemonShellOperator(
+        cmd,
+        out_record_def       = _simple_recdef(),
+        out_col_patterns     = {'text': re.compile(r'^.+$', re.MULTILINE)},
+        batch_done_indicator = 'BATCH_SEPARATOR\n',
+        batch_done_output    = 'BATCH_SEPARATOR\n',
+    )
+    in_batch0  = _create_batch()
+    in_batch1  = _create_batch()
+    op.run(in_batches=(in_batch0, in_batch1))
+
+
+@parameterized([
+    # ( <simple command w/ RecordDef([{'name': 'text', 'type': 'STRING'}]) in/out> )
     ('wiredcmd < IN_BATCH0 > OUT_BATCH'),
 ])
 @raises(OSError)
