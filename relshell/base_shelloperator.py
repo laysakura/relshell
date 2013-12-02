@@ -109,6 +109,7 @@ class BaseShellOperator(object):
         for col_def in recdef:
             col_name = col_def.name
             col_pat  = col_patterns[col_name]
+            col_type = col_def.type
 #             print('''Start matching ("%s"):%s
 # [pattern] %s
 
@@ -130,7 +131,7 @@ class BaseShellOperator(object):
 
             # print('match!! => %s' % (mat.group()))
             pos += mat.end()
-            col_strs.append(mat.group())
+            col_strs.append(col_type.python_cast(mat.group()))
 
         return (Record(recdef, *col_strs), pos)
 

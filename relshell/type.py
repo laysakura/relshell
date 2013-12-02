@@ -30,6 +30,7 @@ class Type(object):
             raise NotImplementedError("Type %s is not supported as relshell type" %
                                       (relshell_type_str))
         self._typestr = relshell_type_str
+        self._type    = Type._type_from_typestr(self._typestr)
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -39,6 +40,13 @@ class Type(object):
 
     def __str__(self):
         return self._typestr
+
+    def python_cast(self, val):
+        """Returns `val``s casted data.
+
+        :raises: `ValueError` if cast failes.
+        """
+        return self._type(val)
 
     @staticmethod
     def equivalent_relshell_type(val):
@@ -53,3 +61,13 @@ class Type(object):
                                       (builtin_type))
         relshell_type_str = Type._typemap[builtin_type]
         return Type(relshell_type_str)
+
+    # private functions
+    @staticmethod
+    def _type_from_typestr(typestr):
+        rettype = None
+        for k, v in Type._typemap.iteritems():
+            if v == typestr:
+                assert(rettype is None)
+                rettype = k
+        return rettype

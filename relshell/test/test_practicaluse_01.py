@@ -11,6 +11,10 @@ def _simple_recdef():
     return RecordDef([{'name': 'text', 'type': 'STRING'}])
 
 
+def _simple_int_recdef():
+    return RecordDef([{'name': 'age', 'type': 'INT'}])
+
+
 def _diff_out_recdef():
     return RecordDef([
         {'name': 'position',
@@ -70,7 +74,7 @@ def test_output_2in_1out():
         'diff IN_BATCH0 IN_BATCH1 > OUT_BATCH',
         out_record_def=_diff_out_recdef(),
         success_exitcodes=(0, 1),
-        out_col_patterns={   # defaultでは r'^.*$\n' にするって感じ
+        out_col_patterns={
             'position': re.compile(r'''
                 # diff position
                 (
@@ -122,7 +126,6 @@ def test_output_2col_in():
     )
     batch_person_age = _create_batch_awk_in()
     batch_age        = op.run(in_batches=(batch_person_age, ))
-    print(batch_age)
     eq_(batch_age,
         Batch((
             Record(_simple_recdef(), 'age:48'),
@@ -130,3 +133,24 @@ def test_output_2col_in():
             Record(_simple_recdef(), 'age:32'),
         ))
     )
+
+
+def test_awk_perl():
+    op_awk = ShellOperator(
+        'awk \'{print $2}\' < IN_BATCH0 > OUT_BATCH',
+        out_record_def   = _simple_int_recdef(),
+        out_col_patterns = {'age': re.compile(r'^.+$', re.MULTILINE)},
+    )
+    batch_person_age = _create_batch_awk_in()
+    batch_age        = op_awk.run(in_batches=(batch_person_age, ))
+
+    op_perl = ShellOperator(
+        'perl -e \'my $sum = 0; while(<STDIN>) { $sum += $_ } print $sum;\' < IN_BATCH0 > OUT_BATCH',
+        out_record_def   = _simple_int_recdef(),
+        out_col_patterns = {'age': re.compile(r'^.+$', re.MULTILINE)},
+    )
+    batch_age_sum = op_perl.run(in_batches=(batch_age, ))
+    eq_(batch_age_sum,
+        Batch((
+            Record(_simple_int_recdef(), 48 + 25 + 32),
+        )))
