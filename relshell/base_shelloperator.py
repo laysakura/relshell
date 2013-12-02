@@ -31,9 +31,7 @@ class BaseShellOperator(object):
         success_exitcodes,
         cwd,
         env,
-        in_record_sep,
-        out_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
-                         # [todo] - in_record_sepの方が入力Recordを文字列にする際のもので，out_record_sepの方が出力文字列をRecordにする際のもの
+        in_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
         ignore_record_pat,
 
         out_col_patterns,
@@ -48,7 +46,6 @@ class BaseShellOperator(object):
         self._cwd               = cwd
         self._env               = env
         self._in_record_sep     = in_record_sep
-        self._out_record_sep    = out_record_sep
         self._out_col_patterns  = out_col_patterns
         if ignore_record_pat: BaseShellOperator._ignore_record_pat = ignore_record_pat
 
@@ -107,7 +104,7 @@ class BaseShellOperator(object):
                 break  # at most 1 batch_to_file can be from stdin
 
     @staticmethod
-    def _out_str_to_batch(out_str, out_recdef, out_record_sep, out_col_pat):
+    def _out_str_to_batch(out_str, out_recdef, out_col_pat):
         print(out_str)
         out_recs = []
 

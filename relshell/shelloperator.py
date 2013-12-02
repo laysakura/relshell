@@ -31,8 +31,6 @@ class ShellOperator(BaseShellOperator):
         cwd=None,
         env=None,
         in_record_sep='\n',
-        out_record_sep='\n',  # [todo] - explain how this parameter is used (using diagram?)
-                              # [todo] - in_record_sepの方が入力Recordを文字列にする際のもので，out_record_sepの方が出力文字列をRecordにする際のもの
         ignore_record_pat=re.compile(r'^\s*$'),
         out_col_patterns=r'^.*$\n',
 
@@ -50,7 +48,6 @@ class ShellOperator(BaseShellOperator):
             cwd,
             env,
             in_record_sep,
-            out_record_sep,
             ignore_record_pat,
             out_col_patterns,
         )
@@ -82,6 +79,6 @@ class ShellOperator(BaseShellOperator):
         else:  # pragma: no cover
             assert(False)
 
-        out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_record_sep, self._out_col_patterns)
+        out_batch = BaseShellOperator._out_str_to_batch(out_str, self._out_recdef, self._out_col_patterns)
         self._batcmd.batch_from_file.finish()
         return out_batch
