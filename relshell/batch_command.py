@@ -62,7 +62,7 @@ class BatchCommand(object):
 
         :param cmd_array: `shlex.split`-ed command
         :rtype:   ([cmd_array], ( batch_to_file, batch_to_file, ... ) )
-        :returns: Modified `cmd_array` and tuple to show how each IN_BATCH is instanciated (TMPFILE or STDIN).
+        :returns: Modified `cmd_array` and tuple to show how each IN_BATCH is instantiated (TMPFILE or STDIN).
             Returned `cmd_array` drops IN_BATCH related tokens.
         :raises:  `IndexError` if IN_BATCHes don't have sequential ID starting from 0
         """
@@ -88,7 +88,7 @@ class BatchCommand(object):
 
         :param cmd_array: `shlex.split`-ed command
         :rtype:   ([cmd_array], batch_from_file)
-        :returns: Modified `cmd_array` and tuple to show how OUT_BATCH is instanciated (TMPFILE or STDOUT).
+        :returns: Modified `cmd_array` and tuple to show how OUT_BATCH is instantiated (TMPFILE or STDOUT).
             Returned `cmd_array` drops OUT_BATCH related tokens.
         :raises:  `IndexError` if multiple OUT_BATCH are found
         """

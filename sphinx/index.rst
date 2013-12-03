@@ -1,23 +1,12 @@
-relshell's documentation
-==============================
+relshell API Reference
+======================
 
-
-API documents
+ShellOperator
 -------------
+.. toctree::
+   :maxdepth: 1
+   :hidden:
 
-.. automodule:: relshell
+   api/shelloperator
 
-.. automodule:: relshell.columndef
-   :exclude-members: __weakref__
-
-.. automodule:: relshell.record
-   :exclude-members: __weakref__
-
-.. automodule:: relshell.recorddef
-   :exclude-members: __weakref__
-
-.. automodule:: relshell.batch
-   :exclude-members: __weakref__
-
-.. automodule:: relshell.type
-   :exclude-members: __weakref__
+* :ref:`api-ShellOperator` - Instantiates
