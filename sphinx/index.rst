@@ -30,3 +30,17 @@ Input/Output Data Structure
 * :ref:`api-Batch` - Unit of `ShellOperator`'s input/output, composed of set of `Record`'s.
 
 * :ref:`api-Record` - Unit of information, composed of columns. Each column is typed (like RDBMS).
+
+Data Type
+---------
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   api/data_type
+
+:synopsis: Data types for `Record`.
+
+* :ref:`api-RecordDef` - a
+
+* :ref:`api-ColumnDef` - a
