@@ -9,7 +9,7 @@ from abc import ABCMeta, abstractmethod
 import shlex
 import os
 import fcntl
-from warnings import warn
+from relshell.logger import get_logger
 from subprocess import Popen, PIPE
 from relshell.record import Record
 from relshell.batch import Batch
@@ -21,6 +21,8 @@ class BaseShellOperator(object):
     """
     __metaclass__ = ABCMeta
 
+    _logger = None
+
     def __init__(
         self,
         cmd,
@@ -30,8 +32,8 @@ class BaseShellOperator(object):
         env,
         in_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
         in_column_sep,
-
         out_col_patterns,
+        loglevel,
     ):
         """Constructor
         """
@@ -43,6 +45,7 @@ class BaseShellOperator(object):
         self._in_record_sep     = in_record_sep
         self._in_column_sep     = in_column_sep
         self._out_col_patterns  = out_col_patterns
+        BaseShellOperator._logger = get_logger(loglevel=loglevel)
 
     @abstractmethod
     def run(self, in_batches):  # pragma: no cover
@@ -120,14 +123,14 @@ class BaseShellOperator(object):
 
             # no more record to parse
             if mat is None:
-                warn('''Following string does not match `out_col_patterns`, ignored:
-%s''' % (str_to_parse))
+                BaseShellOperator._logger.debug('Following string does not match `out_col_patterns`, ignored: """%s"""'
+                                                % (str_to_parse))
                 return (None, None)
 
             # beginning substring is skipped
             if mat.start() > 0:
-                warn('''Following string does is skipped:
-%s''' % (str_to_parse[:mat.start()]))
+                BaseShellOperator._logger.debug('Following string does not match `out_col_patterns`, ignored: """%s"""'
+                                                % (str_to_parse[:mat.start()]))
 
             # print('match!! => %s' % (mat.group()))
             pos += mat.end()

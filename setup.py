@@ -23,7 +23,8 @@ setup(
     ],
     packages         = [
         'relshell',
-        'relshell.test'
+        'relshell.test',
+        'contrib',
     ],
     scripts          = [
     ],
