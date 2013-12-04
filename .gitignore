@@ -6,7 +6,7 @@ bin/
 dist/
 lib/
 man/
-doc/
+doc/html/
 local/
 include/
 *.egg-info/
