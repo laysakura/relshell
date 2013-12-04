@@ -14,7 +14,7 @@ setup(
     author_email     = 'lay.sakura@gmail.com',
     test_suite       = 'nose.collector',
     install_requires = [
-        'logutils',
+        'rainbow_logging_handler',
     ],
     tests_require    = [
         'nose',
@@ -25,7 +25,6 @@ setup(
     packages         = [
         'relshell',
         'relshell.test',
-        'contrib',
     ],
     scripts          = [
     ],
