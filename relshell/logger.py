@@ -7,7 +7,7 @@
 """
 import sys
 import logging
-from contrib.rainbow_logging_handler import RainbowLoggingHandler
+from rainbow_logging_handler import RainbowLoggingHandler
 
 
 def get_logger(loglevel=logging.DEBUG, stream=sys.stderr):
