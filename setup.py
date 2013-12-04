@@ -9,11 +9,12 @@ setup(
     long_description = open('README.rst').read(),
     url              = 'https://github.com/laysakura/relshell',
     license          = 'LICENSE.txt',
-    version          = '0.1.0',
+    version          = '0.1.1',
     author           = 'Sho Nakatani',
     author_email     = 'lay.sakura@gmail.com',
     test_suite       = 'nose.collector',
     install_requires = [
+        'rainbow_logging_handler',
     ],
     tests_require    = [
         'nose',
@@ -23,7 +24,7 @@ setup(
     ],
     packages         = [
         'relshell',
-        'relshell.test'
+        'relshell.test',
     ],
     scripts          = [
     ],

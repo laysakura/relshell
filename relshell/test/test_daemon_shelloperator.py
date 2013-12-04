@@ -58,7 +58,7 @@ def test_daemonized_process():
 
         cur_pid = op.getpid()
         if prev_pid:
-            eq_(cur_pid, prev_pid)  # instanciated process does not die during for loop
+            eq_(cur_pid, prev_pid)  # instantiated process does not die during for loop
         prev_pid = op.getpid()
 
     op.kill()  # [todo] - Calling kill() can be easily forgot.

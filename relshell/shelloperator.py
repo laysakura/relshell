@@ -5,6 +5,7 @@
 
     :synopsis: Provides `ShellOperator`
 """
+import logging
 import os
 from relshell.base_shelloperator import BaseShellOperator
 
@@ -29,6 +30,7 @@ class ShellOperator(BaseShellOperator):
         env=None,
         in_record_sep=os.linesep,
         in_column_sep=' ',
+        loglevel=logging.DEBUG,
 
         # kw & original param
     ):
@@ -44,6 +46,7 @@ class ShellOperator(BaseShellOperator):
             in_record_sep,
             in_column_sep,
             out_col_patterns,
+            loglevel,
         )
 
     def run(self, in_batches):

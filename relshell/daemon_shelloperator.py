@@ -6,15 +6,15 @@
     :synopsis: Provides `DaemonShellOperator`
 """
 import os
-import re
+import logging
 import time
 from relshell.base_shelloperator import BaseShellOperator
 
 
 class DaemonShellOperator(BaseShellOperator):
-    """Instanciate process and keep it running.
+    """Instantiate process and keep it running.
 
-    `DaemonShellOperator` can instanciate processes which satisfy the following constraints:
+    `DaemonShellOperator` can instantiate processes which satisfy the following constraints:
 
     1. Inputs records from `stdin`
     2. Safely dies when `EOF` is input
@@ -49,6 +49,7 @@ class DaemonShellOperator(BaseShellOperator):
         env=None,
         in_record_sep=os.linesep,
         in_column_sep=' ',
+        loglevel=logging.DEBUG,
 
         # kw & original param
    ):
@@ -66,6 +67,7 @@ class DaemonShellOperator(BaseShellOperator):
             in_record_sep,
             in_column_sep,
             out_col_patterns,
+            loglevel,
         )
 
         self._batch_done_indicator = batch_done_indicator
@@ -115,9 +117,9 @@ class DaemonShellOperator(BaseShellOperator):
         return out_batch
 
     def kill(self):
-        """Kill instanciated process
+        """Kill instantiated process
 
-        :raises: `AttributeError` if instanciated process doesn't seem to satisfy `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_
+        :raises: `AttributeError` if instantiated process doesn't seem to satisfy `constraints <relshell.daemon_shelloperator.DaemonShellOperator>`_
         """
         BaseShellOperator._close_process_input_stdin(self._batcmd.batch_to_file_s)
         BaseShellOperator._wait_process(self._process, self._batcmd.sh_cmd, self._success_exitcodes)
