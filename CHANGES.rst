@@ -4,7 +4,7 @@ Changelog for nextversion
 0.1.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Uploaded API reference (http://packages.python.org/relshell)
 
 0.1.1
 -----

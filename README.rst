@@ -9,7 +9,7 @@ A framework to manage shell commands' inputs/outputs as relational data.
 For developers
 ==============
 
-API documents
+API reference
 -------------
 
 Sphinx-powered documents are available on http://packages.python.org/relshell
@@ -38,9 +38,10 @@ Uploading packages to PyPI
 .. code-block:: bash
 
     $ emacs setup.py   # edit `version` string
-    $ emacs CHANGES.txt
+    $ emacs CHANGES.rst
     $ ./setup.py sdist upload
 
+Or use `zest.releaser <https://pypi.python.org/pypi/zest.releaser>`_, a convenient tool for repeated release cycles.
 
 TODO
 ====
