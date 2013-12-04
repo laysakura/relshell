@@ -1,7 +1,7 @@
 Changelog for nextversion
 =========================
 
-0.1.2 (unreleased)
+0.1.2 (2013-12-04)
 ------------------
 
 - Uploaded API reference (http://packages.python.org/relshell)
