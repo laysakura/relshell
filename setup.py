@@ -5,11 +5,11 @@ from setuptools import setup
 
 setup(
     name             = 'relshell',
-    description      = '[under development] A framework to manage shell commands\' inputs/outputs as relational data.',
+    description      = '''A framework to manage shell commands\' inputs/outputs as relational data.''',
     long_description = open('README.rst').read(),
     url              = 'https://github.com/laysakura/relshell',
     license          = 'LICENSE.txt',
-    version          = '0.1.2',
+    version          = '0.2.0',
     author           = 'Sho Nakatani',
     author_email     = 'lay.sakura@gmail.com',
     test_suite       = 'nose.collector',
