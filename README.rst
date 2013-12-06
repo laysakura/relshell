@@ -6,6 +6,15 @@ relshell
 
 A framework to manage shell commands' inputs/outputs as relational data.
 
+.. contents:: :local:
+
+For users
+=========
+
+Unfortunately, `relshell` is not documented so well yet.
+See `relshell/test/test_practical_use_*.py <https://github.com/laysakura/relshell/blob/master/relshell/test/>`_ as well as
+`API reference <http://packages.python.org/relshell>`_ .
+
 For developers
 ==============
 
@@ -43,11 +52,13 @@ Uploading packages to PyPI
 
 Or use `zest.releaser <https://pypi.python.org/pypi/zest.releaser>`_, a convenient tool for repeated release cycles.
 
-TODO
-====
+TODO (ugly Japanese)
+====================
 
 - relshellプロセス ===(thread)===> シェルオペレータ ===(fork)===> シェルコマンドプロセス という流れを作る(Queueもいるね)
+
 - shellstreaming/README.rst にあるような感じで，batchをop間でやりとりできるようにする
+
 - シェルプロセスは非同期でも扱いたい．そもそもpopenとかがそういうインターフェースだし．
 
 - デバッグオプションをonにしたらどんな動作しているのかくらい出力してあげたい
