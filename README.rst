@@ -1,5 +1,5 @@
 relshell
-~~~~~~~~
+========
 
 .. image:: https://travis-ci.org/laysakura/relshell.png?branch=master
    :target: https://travis-ci.org/laysakura/relshell
@@ -9,23 +9,23 @@ A framework to manage shell commands' inputs/outputs as relational data.
 .. contents:: :local:
 
 For users
-=========
+---------
 
 Unfortunately, `relshell` is not documented so well yet.
 See `relshell/test/test_practical_use_*.py <https://github.com/laysakura/relshell/blob/master/relshell/test/>`_ as well as
 `API reference <http://packages.python.org/relshell>`_ .
 
 For developers
-==============
+--------------
 
 API reference
--------------
+#############
 
 Sphinx-powered documents are available on http://packages.python.org/relshell
 
 
 Building and uploading documents
---------------------------------
+################################
 
 .. code-block:: bash
 
@@ -34,7 +34,7 @@ Building and uploading documents
     $ ./setup.py upload_sphinx
 
 Testing
--------
+#######
 
 .. code-block:: bash
 
@@ -42,7 +42,7 @@ Testing
     $ browser htmlcov/index.html  # check coverage
 
 Uploading packages to PyPI
---------------------------
+##########################
 
 .. code-block:: bash
 
@@ -53,7 +53,7 @@ Uploading packages to PyPI
 Or use `zest.releaser <https://pypi.python.org/pypi/zest.releaser>`_, a convenient tool for repeated release cycles.
 
 TODO (ugly Japanese)
-====================
+####################
 
 - relshellプロセス ===(thread)===> シェルオペレータ ===(fork)===> シェルコマンドプロセス という流れを作る(Queueもいるね)
 
