@@ -46,7 +46,7 @@ class DaemonShellOperator(BaseShellOperator):
         # kw & common w/ BaseShellOperator param
         success_exitcodes=(0, ),
         cwd=None,
-        env=None,
+        env=os.environ,
         in_record_sep=os.linesep,
         in_column_sep=' ',
         loglevel=logging.DEBUG,
