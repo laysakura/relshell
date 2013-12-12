@@ -49,7 +49,6 @@ class DaemonShellOperator(BaseShellOperator):
         env=os.environ,
         in_record_sep=os.linesep,
         in_column_sep=' ',
-        loglevel=logging.DEBUG,
 
         # kw & original param
    ):
@@ -67,7 +66,6 @@ class DaemonShellOperator(BaseShellOperator):
             in_record_sep,
             in_column_sep,
             out_col_patterns,
-            loglevel,
         )
 
         self._batch_done_indicator = batch_done_indicator

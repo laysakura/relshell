@@ -9,7 +9,7 @@ from abc import ABCMeta, abstractmethod
 import shlex
 import os
 import fcntl
-from relshell.logger import get_logger
+from relshell.logger import Logger
 from subprocess import Popen, PIPE
 from relshell.record import Record
 from relshell.batch import Batch
@@ -33,7 +33,6 @@ class BaseShellOperator(object):
         in_record_sep,  # [todo] - explain how this parameter is used (using diagram?)
         in_column_sep,
         out_col_patterns,
-        loglevel,
     ):
         """Constructor
         """
@@ -45,7 +44,7 @@ class BaseShellOperator(object):
         self._in_record_sep     = in_record_sep
         self._in_column_sep     = in_column_sep
         self._out_col_patterns  = out_col_patterns
-        BaseShellOperator._logger = get_logger(loglevel=loglevel)
+        BaseShellOperator._logger = Logger.instance()
 
     @abstractmethod
     def run(self, in_batches):  # pragma: no cover

@@ -30,7 +30,6 @@ class ShellOperator(BaseShellOperator):
         env=os.environ,
         in_record_sep=os.linesep,
         in_column_sep=' ',
-        loglevel=logging.DEBUG,
 
         # kw & original param
     ):
@@ -46,7 +45,6 @@ class ShellOperator(BaseShellOperator):
             in_record_sep,
             in_column_sep,
             out_col_patterns,
-            loglevel,
         )
 
     def run(self, in_batches):

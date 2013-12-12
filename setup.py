@@ -9,7 +9,7 @@ setup(
     long_description = open('README.rst').read(),
     url              = 'https://github.com/laysakura/relshell',
     license          = 'LICENSE.txt',
-    version          = '0.2.1',
+    version          = '0.2.2',
     author           = 'Sho Nakatani',
     author_email     = 'lay.sakura@gmail.com',
     test_suite       = 'nose.collector',

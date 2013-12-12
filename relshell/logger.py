@@ -3,22 +3,30 @@
     relshell.logger
     ~~~~~~~~~~~~~~~
 
-    :synopsis: Provides pretty colorful logger.
+    :synopsis: Provides logger
 """
 import sys
 import logging
 from rainbow_logging_handler import RainbowLoggingHandler
 
 
-def get_logger(loglevel=logging.DEBUG, stream=sys.stderr):
-    """Returns logger"""
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
+class Logger(object):
+    """Provides logger"""
 
-    handler   = RainbowLoggingHandler(stream)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    root_logger.addHandler(handler)
-    logger = logging.getLogger('logger')
-    logger.setLevel(loglevel)
-    return logger
+    _instance = None
+
+    def __init__(self):
+        """
+        .. warn::
+            Do not use this function. Use `instance()`.
+        """
+        self._logger = logging.getLogger('relshell_logger')
+        handler = RainbowLoggingHandler(sys.stderr)
+        self._logger.addHandler(handler)
+
+    @staticmethod
+    def instance():
+        """Returns the logger instance"""
+        if Logger._instance is None:
+            Logger._instance = Logger()
+        return Logger._instance._logger
