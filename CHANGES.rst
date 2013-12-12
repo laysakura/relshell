@@ -1,7 +1,7 @@
 Changelog for nextversion
 =========================
 
-0.2.2 (unreleased)
+0.2.2 (2013-12-12)
 ------------------
 
 - ShellOperators inherit environmental variables
