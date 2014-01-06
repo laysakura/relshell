@@ -135,7 +135,7 @@ class BaseShellOperator(object):
             pos += mat.end()
             col_strs.append(col_type.python_cast(mat.group()))
 
-        return (Record(recdef, *col_strs), pos)
+        return (Record(*col_strs), pos)
 
     @staticmethod
     def _out_str_to_batch(out_str, out_recdef, out_col_patterns):
@@ -147,7 +147,7 @@ class BaseShellOperator(object):
                 break
             out_recs.append(rec)
             pos += rec_str_len
-        out_batch = Batch(tuple(out_recs))
+        out_batch = Batch(out_recdef, tuple(out_recs))
         return out_batch
 
     @staticmethod

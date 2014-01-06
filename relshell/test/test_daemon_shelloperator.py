@@ -32,13 +32,15 @@ def _simple_recdef():
 
 
 def _create_batch():
-    rdef = _simple_recdef()
-    return Batch((
-        Record(rdef, 'test1'),
-        Record(rdef, 'test2'),
-        Record(rdef, 'test3'),
-        Record(rdef, 'test4'),
-    ))
+    return Batch(
+        _simple_recdef(),
+        (
+            Record('test1'),
+            Record('test2'),
+            Record('test3'),
+            Record('test4'),
+        )
+    )
 
 
 def test_daemonized_process():

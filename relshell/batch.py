@@ -8,20 +8,29 @@
     A `Batch` is passed to an operator at-a-time internally.
 """
 import os
+from relshell.record import Record
 
 
 class Batch(object):
     """Set of records"""
-    def __init__(self, records):
+    def __init__(self, record_def, records):
         """Create an *immutable* batch of records
 
+        :param record_def: instance of `RecordDef <#relshell.recorddef.RecordDef>`_
         :param records: records
         :type records:  instance of `tuple`
+        :raises: `TypeError` when any record has mismatched type with :param:`record_def`
         """
-        assert(isinstance(records, tuple))
+        # check each record type
+        map(lambda r: Record._chk_type(record_def, r), records)
 
+        self._rdef         = record_def
         self._records      = records
         self._records_iter = iter(records)
+
+    def record_def(self):
+        """Return instance of :class:`RecordDef`"""
+        return self._rdef
 
     def __iter__(self):
         return self

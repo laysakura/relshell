@@ -57,32 +57,38 @@ def _awk_in_recdef():
 
 
 def _create_batch():
-    rdef = _simple_recdef()
-    return Batch((
-        Record(rdef, 'test1'),
-        Record(rdef, 'test2'),
-        Record(rdef, 'test3'),
-        Record(rdef, 'test4'),
-    ))
+    return Batch(
+        _simple_recdef(),
+        (
+            Record('test1'),
+            Record('test2'),
+            Record('test3'),
+            Record('test4'),
+        )
+    )
 
 
 def _create_batch_diff_in():
-    rdef = _simple_recdef()
-    return Batch((
-        Record(rdef, 'test1'),
-        Record(rdef, 'test2xx'),
-        Record(rdef, 'test3'),
-        Record(rdef, 'test4yy'),
-    ))
+    return Batch(
+        _simple_recdef(),
+        (
+            Record('test1'),
+            Record('test2xx'),
+            Record('test3'),
+            Record('test4yy'),
+        )
+    )
 
 
 def _create_batch_awk_in():
-    rdef = _awk_in_recdef()
-    return Batch((
-        Record(rdef, 'tanaka', 48),
-        Record(rdef, 'suzuki', 25),
-        Record(rdef, 'satoh',  32),
-    ))
+    return Batch(
+        _awk_in_recdef(),
+        (
+            Record('tanaka', 48),
+            Record('suzuki', 25),
+            Record('satoh',  32),
+        )
+    )
 
 
 def test_output_2in_1out():
@@ -115,25 +121,25 @@ def test_output_2in_1out():
     )
     out_batch = op.run(in_batches=(batch0, batch1))
     eq_(out_batch,
-        Batch((
-            Record(
-                _diff_out_recdef(),
-                '2c2',
-'''< test2
+        Batch(_diff_out_recdef(),
+              (
+                  Record(
+                      '2c2',
+                      '''< test2
 ---
 > test2xx
 ''',
-            ),
+                    ),
 
-            Record(
-                _diff_out_recdef(),
-                '4c4',
-'''< test4
+                  Record(
+                      '4c4',
+                      '''< test4
 ---
 > test4yy
 ''',
-            ),
-        ))
+                  ),
+              )
+          )
     )
 
 
@@ -146,11 +152,14 @@ def test_output_2col_in():
     batch_person_age = _create_batch_awk_in()
     batch_age        = op.run(in_batches=(batch_person_age, ))
     eq_(batch_age,
-        Batch((
-            Record(_simple_recdef(), 'age:48'),
-            Record(_simple_recdef(), 'age:25'),
-            Record(_simple_recdef(), 'age:32'),
-        ))
+        Batch(
+            _simple_recdef(),
+            (
+                Record('age:48'),
+                Record('age:25'),
+                Record('age:32'),
+            )
+        )
     )
 
 
@@ -170,6 +179,7 @@ def test_awk_perl():
     )
     batch_age_sum = op_perl.run(in_batches=(batch_age, ))
     eq_(batch_age_sum,
-        Batch((
-            Record(_simple_int_recdef(), 48 + 25 + 32),
-        )))
+        Batch(
+            _simple_int_recdef(),
+            (Record(48 + 25 + 32), )
+        ))

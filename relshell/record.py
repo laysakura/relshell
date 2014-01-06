@@ -12,24 +12,19 @@ class Record(object):
     """Record."""
 
     # APIs
-    def __init__(self, record_def, *columns, **kwargs):
+    def __init__(self, *columns):
         """Creates a record with `record_def` constraints.
 
-        :param record_def: instance of `RecordDef <#relshell.recorddef.RecordDef>`_
         :param \*columns:     contents of columns
-        :raises:           `TypeError`
         """
-        self._rec    = Record._internal_repl(columns)
-        self._recdef = record_def
-        Record._chk_type(self._recdef, self._rec)
-
+        self._rec     = Record._internal_repl(columns)
         self._cur_col = 0  # Used for `next()`
 
     def __str__(self):
         """Returns string representation of record"""
         retstr_list = ['(']
         for i in xrange(len(self._rec)):
-            retstr_list.append('"%s": "%s", ' % (self._recdef[i].name, self._rec[i]))
+            retstr_list.append('"%s", ' % (self._rec[i]))
         retstr_list.append(')')
         return ''.join(retstr_list)
 
@@ -57,7 +52,7 @@ class Record(object):
         return col
 
     def __eq__(self, other):
-        return self._rec == other._rec and self._recdef == other._recdef
+        return self._rec == other._rec
 
     def __ne__(self, other):
         return not self.__eq__(other)

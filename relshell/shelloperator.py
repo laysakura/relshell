@@ -43,7 +43,7 @@ class ShellOperator(BaseShellOperator):
             cwd,
             env,
             in_record_sep,
-            in_column_sep,
+            in_column_sep,  # [fix] - 複数カラムを1レコードに(文字列に)落し込むとき，各カラムの区切りが同一である必要はない．sprintfみたいにformat指定できるべき．
             out_col_patterns,
         )
 
