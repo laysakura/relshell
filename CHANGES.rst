@@ -1,7 +1,7 @@
 Changelog for nextversion
 =========================
 
-0.2.3 (unreleased)
+0.2.3 (2014-01-06)
 ------------------
 
 - Not Record but Batch has RecordDef
