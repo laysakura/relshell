@@ -68,7 +68,12 @@ class Batch(object):
                 ret_str_list.pop()  # drop last comma
                 ret_str_list.append('}%s' % (os.linesep))
             elif format == 'csv':
-                assert(False)
+                for i in xrange(len(rec)):
+                    colval = rec[i]
+                    ret_str_list.append('"%s"' % (colval))
+                    ret_str_list.append(',')
+                ret_str_list.pop()  # drop last comma
+                ret_str_list.append('%s' % (os.linesep))
             else:
                 assert(False)
         return ''.join(ret_str_list)
