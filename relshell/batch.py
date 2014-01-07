@@ -17,7 +17,7 @@ class Batch(object):
         """Create an *immutable* batch of records
 
         :param record_def: instance of `RecordDef <#relshell.recorddef.RecordDef>`_
-        :param records: records
+        :param records: records. Leftmost element is oldest (has to be treated earlier).
         :type records:  instance of `tuple`
         :raises: `TypeError` when any record has mismatched type with :param:`record_def`
         """
@@ -43,10 +43,34 @@ class Batch(object):
         return next(self._records_iter)
 
     def __str__(self):
+        return formatted_str('json')
         ret_str_list = ['(%s' % (os.linesep)]
+
         for i in xrange(len(self._records)):
             ret_str_list.append('    %s%s' % (self._records[i], os.linesep))
         ret_str_list.append(')%s' % (os.linesep))
+        return ''.join(ret_str_list)
+
+    def formatted_str(self, format):
+        """Return formatted str.
+
+        :param format: one of 'json', 'csv' are supported
+        """
+        assert(format in ('json', 'csv'))
+        ret_str_list = []
+        for rec in self._records:
+            if format == 'json':
+                ret_str_list.append('{')
+                for i in xrange(len(rec)):
+                    colname, colval = self._rdef[i].name, rec[i]
+                    ret_str_list.append('"%s":"%s"' % (colname, colval))
+                    ret_str_list.append(',')
+                ret_str_list.pop()  # drop last comma
+                ret_str_list.append('}%s' % (os.linesep))
+            elif format == 'csv':
+                assert(False)
+            else:
+                assert(False)
         return ''.join(ret_str_list)
 
     def __eq__(self, other):
