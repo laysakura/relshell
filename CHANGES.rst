@@ -1,7 +1,7 @@
 Changelog for nextversion
 =========================
 
-0.2.4 (unreleased)
+0.2.4 (2014-01-07)
 ------------------
 
 - Supports JSON & CSV batch output format
