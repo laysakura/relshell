@@ -1,6 +1,12 @@
 Changelog for nextversion
 =========================
 
+0.2.5 (unreleased)
+------------------
+
+- Adds RecordDef.colindex_by_colname()
+
+
 0.2.4 (2014-01-07)
 ------------------
 

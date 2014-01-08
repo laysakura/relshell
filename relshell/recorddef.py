@@ -64,6 +64,16 @@ class RecordDef(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def colindex_by_colname(self, colname):
+        """Return column index whose name is :param:`column`
+
+        :raises: `ValueError` when no column with :param:`colname` found
+        """
+        for i, coldef in enumerate(self):    # iterate each column's definition
+            if coldef.name == colname:
+                return i
+        raise ValueError('No column named "%s" found' % (colname))
+
     # Private functions
     def _set_coldefs(self):
         self._coldefs = []
