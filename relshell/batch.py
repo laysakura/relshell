@@ -43,13 +43,7 @@ class Batch(object):
         return next(self._records_iter)
 
     def __str__(self):
-        return formatted_str('json')
-        ret_str_list = ['(%s' % (os.linesep)]
-
-        for i in xrange(len(self._records)):
-            ret_str_list.append('    %s%s' % (self._records[i], os.linesep))
-        ret_str_list.append(')%s' % (os.linesep))
-        return ''.join(ret_str_list)
+        return self.formatted_str('json')
 
     def formatted_str(self, format):
         """Return formatted str.

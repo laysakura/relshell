@@ -1,6 +1,12 @@
 Changelog for nextversion
 =========================
 
+0.2.6 (unreleased)
+------------------
+
+- Bugfix on Batch.__str__()
+
+
 0.2.5 (2014-01-08)
 ------------------
 
