@@ -1,6 +1,12 @@
 Changelog for nextversion
 =========================
 
+0.2.7 (unreleased)
+------------------
+
+- Makes Batch picklable
+
+
 0.2.6 (2014-01-09)
 ------------------
 

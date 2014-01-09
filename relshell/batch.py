@@ -26,7 +26,7 @@ class Batch(object):
 
         self._rdef         = record_def
         self._records      = records
-        self._records_iter = iter(records)
+        self._records_iter = 0    # column number to iterate over
 
     def record_def(self):
         """Return instance of :class:`RecordDef`"""
@@ -40,7 +40,10 @@ class Batch(object):
 
         :raises: `StopIteration` when no more record is in this batch
         """
-        return next(self._records_iter)
+        if self._records_iter >= len(self._records):
+            raise StopIteration
+        self._records_iter += 1
+        return self._records[self._records_iter - 1]
 
     def __str__(self):
         return self.formatted_str('json')
