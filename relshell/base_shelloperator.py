@@ -66,6 +66,7 @@ class BaseShellOperator(object):
                 env    = env,
                 bufsize = 1 if non_blocking_stdout else 0,
             )
+            BaseShellOperator._logger.info('[Command execution] $ %s' % (batcmd.sh_cmd))
         except OSError as e:
             raise OSError('Following command fails - %s:%s$ %s' % (e, os.linesep, batcmd.sh_cmd))
 

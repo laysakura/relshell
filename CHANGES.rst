@@ -1,6 +1,12 @@
 Changelog for nextversion
 =========================
 
+0.2.8 (unreleased)
+------------------
+
+- Outputs log when executing commands
+
+
 0.2.7 (2014-01-09)
 ------------------
 

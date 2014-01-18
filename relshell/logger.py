@@ -21,6 +21,7 @@ class Logger(object):
             Do not use this function. Use `instance()`.
         """
         self._logger = logging.getLogger('relshell_logger')
+        self._logger.setLevel(logging.INFO)
         handler = RainbowLoggingHandler(sys.stderr)
         self._logger.addHandler(handler)
 
