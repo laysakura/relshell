@@ -1,7 +1,7 @@
 Changelog for nextversion
 =========================
 
-0.2.10 (unreleased)
+0.2.10 (2014-01-21)
 -------------------
 
 - Escape `"` when Batch.__str__() transforms batch into csv or json
