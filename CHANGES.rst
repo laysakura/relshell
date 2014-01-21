@@ -1,6 +1,12 @@
 Changelog for nextversion
 =========================
 
+0.2.9 (2014-01-21)
+------------------
+
+- DEBUG: DaemonShellOperator can input large batch
+
+
 0.2.8 (2014-01-18)
 ------------------
 
