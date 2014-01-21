@@ -60,14 +60,14 @@ class Batch(object):
                 ret_str_list.append('{')
                 for i in xrange(len(rec)):
                     colname, colval = self._rdef[i].name, rec[i]
-                    ret_str_list.append('"%s":"%s"' % (colname, colval))
+                    ret_str_list.append('"%s":"%s"' % (colname, str(colval).replace('"', r'\"')))
                     ret_str_list.append(',')
                 ret_str_list.pop()  # drop last comma
                 ret_str_list.append('}%s' % (os.linesep))
             elif format == 'csv':
                 for i in xrange(len(rec)):
                     colval = rec[i]
-                    ret_str_list.append('"%s"' % (colval))
+                    ret_str_list.append('"%s"' % (str(colval).replace('"', r'\"')))
                     ret_str_list.append(',')
                 ret_str_list.pop()  # drop last comma
                 ret_str_list.append('%s' % (os.linesep))
