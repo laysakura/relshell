@@ -1,10 +1,10 @@
 Changelog for nextversion
 =========================
 
-0.2.11 (unreleased)
+0.2.11 (2014-01-22)
 -------------------
 
-- Nothing changed yet.
+- Bugfix: bug when multiple DaemonShellOperator exist is fixed
 
 
 0.2.10 (2014-01-21)
