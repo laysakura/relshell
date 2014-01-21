@@ -70,7 +70,7 @@ class Record(object):
         :raises:       `TypeError`
         """
         if len(recdef) != len(rec):
-            raise TypeError("Number of columns is different from RecordDef")
+            raise TypeError("Number of columns (%d) is different from RecordDef (%d)" % (len(rec), len(recdef)))
 
         for i in xrange(len(recdef)):
             try:
