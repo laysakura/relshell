@@ -139,3 +139,43 @@ def test_long_batch_to_shelloperator():
         batch_done_indicator='not word\n',
         batch_done_output='single word is expected\n')
     out_batch = op.run(in_batches=(long_batch, ))
+
+
+def test_does_word_count_drop_batch():
+    import json
+
+    input_batches_json = join(abspath(dirname(__file__)), 'test_daemon_shelloperator_words_batches.txt')
+    with open(input_batches_json) as f:
+        raw_batches = json.load(f)
+
+    # create batches
+    batches = []
+    for raw_batch in raw_batches:
+        records = []
+        for raw_record in raw_batch:
+            records.append(Record(raw_record['word'].encode('utf-8')))
+        batches.append(Batch(RecordDef([{'name': 'word', 'type': 'STRING'}]), records))
+
+    # launch daemon operator
+    op = DaemonShellOperator(
+        '%s < IN_BATCH0 > OUT_BATCH' % (WORD_COUNT),
+        out_record_def=RecordDef([{'name': 'word', 'type': 'STRING'}, {'name': 'count', 'type': 'INT'}]),
+        out_col_patterns={
+            'word'  : re.compile(r'^.+(?= )', re.MULTILINE),
+            'count' : re.compile(r'\d+$', re.MULTILINE),
+        },
+        batch_done_indicator='not word\n',
+        batch_done_output='single word is expected\n')
+
+    n_words = 0
+    wc_dict = {}
+    for batch in batches:
+        out_batch = op.run(in_batches=(batch, ))
+        for record in out_batch:
+            n_words += 1
+            word, count = (record[0], record[1])
+            wc_dict[word] = count
+    eq_(n_words            , 653)
+    eq_(wc_dict['from']    , 7)
+    eq_(wc_dict['november'], 5)
+    eq_(wc_dict['2009']    , 2)
