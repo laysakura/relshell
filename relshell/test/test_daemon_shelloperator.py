@@ -2,6 +2,7 @@
 from nose.tools import *
 from nose_parameterized import parameterized
 import os
+from os.path import join, abspath, dirname
 import tempfile
 import re
 from relshell.recorddef import RecordDef
@@ -10,6 +11,7 @@ from relshell.batch import Batch
 from relshell.daemon_shelloperator import DaemonShellOperator
 
 
+WORD_COUNT = join(abspath(dirname(__file__)), 'shellcmd', 'word_count')
 n_tmpfile = 0
 
 
@@ -117,3 +119,23 @@ def test_simple_operator_error_cmd(cmd):
         batch_done_output    = 'BATCH_SEPARATOR\n',
     )
     op.run(in_batches=(_create_batch(), ))
+
+
+def test_long_batch_to_shelloperator():
+    words_file = join(abspath(dirname(__file__)), 'test_daemon_shelloperator_words.txt')
+    records    = []
+    with open(words_file) as f:
+        for line in f:
+            records.append(Record(line.strip()))
+    long_batch = Batch(RecordDef([{'name': 'word'}]), records)
+
+    op = DaemonShellOperator(
+        '%s < IN_BATCH0 > OUT_BATCH' % (WORD_COUNT),
+        out_record_def=RecordDef([{'name': 'word', 'type': 'STRING'}, {'name': 'count', 'type': 'INT'}]),
+        out_col_patterns={
+            'word'  : re.compile(r'^.+(?= )', re.MULTILINE),
+            'count' : re.compile(r'\d+$', re.MULTILINE),
+        },
+        batch_done_indicator='not word\n',
+        batch_done_output='single word is expected\n')
+    out_batch = op.run(in_batches=(long_batch, ))
