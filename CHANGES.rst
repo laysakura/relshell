@@ -1,6 +1,12 @@
 Changelog for nextversion
 =========================
 
+0.2.11 (unreleased)
+-------------------
+
+- Nothing changed yet.
+
+
 0.2.10 (2014-01-21)
 -------------------
 
