@@ -6,8 +6,8 @@
     :synopsis: Provides `DaemonShellOperator`
 """
 import os
-import logging
 import time
+from threading import Thread
 from relshell.base_shelloperator import BaseShellOperator
 
 
@@ -30,6 +30,8 @@ class DaemonShellOperator(BaseShellOperator):
     1. Support input-records from file if file is only appended
     2. Support non-`EOF` process terminator (e.g. `exit\n` command for some intreractive shell)
     """
+
+    _subprocess_out_str = None
 
     def __init__(
         self,
@@ -93,24 +95,22 @@ class DaemonShellOperator(BaseShellOperator):
             self._process = BaseShellOperator._start_process(
                 self._batcmd, self._cwd, self._env,
                 non_blocking_stdout=True)
-        BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, self._in_column_sep, in_batches, self._batcmd.batch_to_file_s)
 
-        # pass batch-done indicator
+        # Begin thread to read from subprocess's stdout.
+        # Without this thread, subprocess's output buffer becomes full and no one solves it.
+        t_consumer = Thread(target=get_subprocess_output, args=(self._process.stdout, self._batch_done_output))
+        t_consumer.start()
+
+        # pass batch to subprocess
+        BaseShellOperator._batch_to_stdin(self._process, self._in_record_sep, self._in_column_sep,
+                                          in_batches, self._batcmd.batch_to_file_s)
+
+        # pass batch-done indicator to subprocess
         self._process.stdin.write(self._batch_done_indicator)
 
-        # wait for batch separator & get its output
-        out_str_list = []
-        while True:
-            self._process.stdout.flush()
-            try:
-                out_str_list.append(self._process.stdout.read())
-            except IOError:  # no character available from stdout
-                time.sleep(1e-3)
-            batch_done_output_spos = DaemonShellOperator._batch_done_start_pos(''.join(out_str_list), self._batch_done_output)
-            if batch_done_output_spos >= 0:
-                break
-        out_str = ''.join(out_str_list)
-        out_batch = BaseShellOperator._out_str_to_batch(out_str[:batch_done_output_spos],
+        # get output from subprocess
+        t_consumer.join()
+        out_batch = BaseShellOperator._out_str_to_batch(DaemonShellOperator._subprocess_out_str,
                                                         self._out_recdef, self._out_col_patterns)
         return out_batch
 
@@ -130,3 +130,17 @@ class DaemonShellOperator(BaseShellOperator):
     @staticmethod
     def _batch_done_start_pos(process_output_str, batch_done_output):
         return process_output_str.rfind(batch_done_output)
+
+
+def get_subprocess_output(stdout, batch_done_output):
+    out_str_list = []
+    while True:
+        try:
+            out_str_list.append(stdout.read())
+        except IOError:  # no character available from stdout
+            time.sleep(1e-3)
+        batch_done_output_spos = DaemonShellOperator._batch_done_start_pos(''.join(out_str_list), batch_done_output)
+        if batch_done_output_spos >= 0:
+            break
+
+    DaemonShellOperator._subprocess_out_str = ''.join(out_str_list)[:batch_done_output_spos]

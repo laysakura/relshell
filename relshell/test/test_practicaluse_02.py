@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import nose.tools as ns
 import re
+from os.path import join, abspath, dirname
 from relshell.recorddef import RecordDef
 from relshell.record import Record
 from relshell.batch import Batch
 from relshell.daemon_shelloperator import DaemonShellOperator
 
 
-SPLIT_SENTENCE = '/home/nakatani/git/shellstreaming/example/shellcmd/split_sentence'
-# SPLIT_SENTENCE = '/home/nakatani/git/shellstreaming/example/shellcmd/ttt'
+SPLIT_SENTENCE = join(abspath(dirname(__file__)), 'shellcmd', 'split_sentence')
 
 
 def _create_batch():
