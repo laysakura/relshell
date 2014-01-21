@@ -77,8 +77,11 @@ class BaseShellOperator(object):
 
     @staticmethod
     def _input_str(in_batch, in_record_sep, in_column_sep):
+        if len(in_batch) == 0:
+            return ''
+
         input_str_list = []
-        for i, record in enumerate(in_batch):
+        for record in in_batch:
             for col in record:
                 input_str_list.append(str(col))
                 input_str_list.append(in_column_sep)
