@@ -83,13 +83,13 @@ def test_auto_typing():
 @raises(TypeError)
 def test_batch_mismatch_length():
     rdef  = RecordDef([{'name': 'col0', 'type': 'STRING'}])
-    batch = Batch(rdef, Record('Hello', 'World'))
+    batch = Batch(rdef, [Record('Hello', 'World')])
 
 
 @raises(TypeError)
 def test_batch_mismatch_type():
     rdef  = RecordDef([{'name': 'col0', 'type': 'INT'}])
-    batch = Batch(rdef, Record('not convertible to INT'))
+    batch = Batch(rdef, [Record('not convertible to INT')])
 
 
 @raises(TypeError)
@@ -99,4 +99,10 @@ def test_batch_non_basic_type():
     c = C  # c has too complex type as stream record
 
     rdef  = RecordDef([{'name': 'col0'}])
-    batch = Batch(rdef, Record(c))
+    batch = Batch(rdef, [Record(c)])
+
+
+def test_empty_string_batch():
+    rdef  = RecordDef([{'name': 'word', 'type': 'STRING'}])
+    batch = Batch(rdef, [Record('')])
+    eq_(len(batch), 1)
