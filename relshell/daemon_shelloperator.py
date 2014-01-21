@@ -31,8 +31,6 @@ class DaemonShellOperator(BaseShellOperator):
     2. Support non-`EOF` process terminator (e.g. `exit\n` command for some intreractive shell)
     """
 
-    _subprocess_out_str = None
-
     def __init__(
         self,
 
@@ -72,7 +70,9 @@ class DaemonShellOperator(BaseShellOperator):
 
         self._batch_done_indicator = batch_done_indicator
         self._batch_done_output    = batch_done_output
-        self._process = None
+        self._process              = None
+        self._subprocess_out_str   = []  # 0-th is subprocess's output. must not be str since it is immutable &
+                                         # get_subprocess_output cannot modify it
 
         if not self._batcmd.has_input_from_stdin():
             BaseShellOperator._rm_process_input_tmpfiles(self._batcmd.batch_to_file_s)  # [todo] - Removing tmpfiles can be easily forgot. Less lifetime for tmpfile.
@@ -98,7 +98,8 @@ class DaemonShellOperator(BaseShellOperator):
 
         # Begin thread to read from subprocess's stdout.
         # Without this thread, subprocess's output buffer becomes full and no one solves it.
-        t_consumer = Thread(target=get_subprocess_output, args=(self._process.stdout, self._batch_done_output))
+        t_consumer = Thread(target=get_subprocess_output,
+                            args=(self._process.stdout, self._batch_done_output, self._subprocess_out_str))
         t_consumer.start()
 
         # pass batch to subprocess
@@ -110,7 +111,9 @@ class DaemonShellOperator(BaseShellOperator):
 
         # get output from subprocess
         t_consumer.join()
-        out_batch = BaseShellOperator._out_str_to_batch(DaemonShellOperator._subprocess_out_str,
+        subprocess_out_str       = self._subprocess_out_str[0]
+        self._subprocess_out_str = []
+        out_batch = BaseShellOperator._out_str_to_batch(subprocess_out_str,
                                                         self._out_recdef, self._out_col_patterns)
         return out_batch
 
@@ -132,7 +135,9 @@ class DaemonShellOperator(BaseShellOperator):
         return process_output_str.rfind(batch_done_output)
 
 
-def get_subprocess_output(stdout, batch_done_output):
+def get_subprocess_output(stdout, batch_done_output,
+                          # out
+                          out_str):
     out_str_list = []
     while True:
         try:
@@ -143,4 +148,4 @@ def get_subprocess_output(stdout, batch_done_output):
         if batch_done_output_spos >= 0:
             break
 
-    DaemonShellOperator._subprocess_out_str = ''.join(out_str_list)[:batch_done_output_spos]
+    out_str.append(''.join(out_str_list)[:batch_done_output_spos])
