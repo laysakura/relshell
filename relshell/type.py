@@ -5,16 +5,17 @@
 
     :synopsis: Provides relshell types.
 """
-import types
+from relshell.timestamp import Timestamp
 
 
 class Type(object):
     """Types of columns."""
 
     _typemap = {
-        # builtin type   : relshell type
-        types.IntType    : 'INT',
-        types.StringType : 'STRING',
+        # python type : relshell type
+        int       : 'INT',
+        str       : 'STRING',
+        Timestamp : 'TIMESTAMP'
     }
     type_list = _typemap.values()
     """List of relshell types."""
