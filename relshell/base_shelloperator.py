@@ -110,18 +110,12 @@ class BaseShellOperator(object):
 
     @staticmethod
     def _parse_record(str_to_parse, col_patterns, recdef):
-        col_strs = []
-        pos = 0
+        cols = []
+        pos  = 0
         for col_def in recdef:
             col_name = col_def.name
             col_pat  = col_patterns[col_name]
             col_type = col_def.type
-#             print('''Start matching ("%s"):%s
-# [pattern] %s
-
-# [output result]
-# %s
-#                 ''' % (col_name, os.linesep, col_pat.pattern, str_to_parse))
             mat = col_pat.search(str_to_parse[pos:])
 
             # no more record to parse
@@ -135,11 +129,11 @@ class BaseShellOperator(object):
                 BaseShellOperator._logger.debug('Following string does not match `out_col_patterns`, ignored: """%s"""'
                                                 % (str_to_parse[:mat.start()]))
 
-            # print('match!! => %s' % (mat.group()))
             pos += mat.end()
-            col_strs.append(col_type.python_cast(mat.group()))
+            col_str = mat.group()
+            cols.append(col_type.python_cast(col_str))
 
-        return (Record(*col_strs), pos)
+        return (Record(*cols), pos)
 
     @staticmethod
     def _out_str_to_batch(out_str, out_recdef, out_col_patterns):
