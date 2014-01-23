@@ -1,6 +1,12 @@
 Changelog for nextversion
 =========================
 
+0.3.1 (2014-01-23)
+------------------
+
+- Supports TIMESTAMP type further
+
+
 0.3.0 (2014-01-23)
 ------------------
 
