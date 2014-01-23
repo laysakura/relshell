@@ -130,6 +130,8 @@ class BaseShellOperator(object):
                                                 % (str_to_parse[:mat.start()]))
 
             pos += mat.end()
+            if pos == 0:
+                raise ValueError('Regex pattern "%s" matches 0-length string' % (col_pat))
             col_str = mat.group()
             cols.append(col_type.python_cast(col_str))
 

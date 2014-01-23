@@ -1,6 +1,12 @@
 Changelog for nextversion
 =========================
 
+0.3.2 (unreleased)
+------------------
+
+- Raises exception when weird regex pattern is given
+
+
 0.3.1 (2014-01-23)
 ------------------
 

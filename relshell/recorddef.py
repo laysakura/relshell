@@ -82,3 +82,6 @@ class RecordDef(object):
                 self._coldefs.append(ColumnDef(raw_coldef))
             except AttributeError as e:
                 raise AttributeError("In column %d: %s" % (i, e))
+
+    def __str__(self):
+        return str(self._recdef)

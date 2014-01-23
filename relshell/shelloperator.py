@@ -5,7 +5,6 @@
 
     :synopsis: Provides `ShellOperator`
 """
-import logging
 import os
 from relshell.base_shelloperator import BaseShellOperator
 
