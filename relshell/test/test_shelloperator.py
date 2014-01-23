@@ -7,6 +7,7 @@ import re
 from relshell.recorddef import RecordDef
 from relshell.record import Record
 from relshell.batch import Batch
+from relshell.timestamp import Timestamp
 from relshell.shelloperator import ShellOperator
 
 
@@ -127,3 +128,22 @@ def test_output_batch_sorted():
     sorted_batch = _create_batch()
     out_batch    = op.run(in_batches=(in_batch, ))
     eq_(out_batch, sorted_batch)
+
+
+@parameterized([
+    # ( <simple command w/ RecordDef([{'name': 'text', 'type': 'STRING'}]) in/out> )
+    '2013-04-05',
+    '2013-04-05 12:00:30',
+])
+def test_timestamp_type(timestamp_str):
+    rdef = RecordDef([{'name': 'timestamp_str', 'type': 'STRING'}])
+    op = ShellOperator(
+        'cat < IN_BATCH0 > OUT_BATCH',
+        out_record_def=RecordDef([{'name': 'timestamp', 'type': 'TIMESTAMP'}]),
+        out_col_patterns={'timestamp': re.compile(r'^\d{4}-\d{2}-\d{2}.*$', re.MULTILINE)},
+    )
+    in_batch  = Batch(rdef, (Record(timestamp_str), ))
+    out_batch = op.run(in_batches=(in_batch, ))
+    eq_(out_batch,
+        Batch(RecordDef([{'name': 'timestamp', 'type': 'TIMESTAMP'}]),
+              (Record(Timestamp(timestamp_str)), )))
