@@ -1,7 +1,13 @@
 Changelog for nextversion
 =========================
 
-0.3.2 (unreleased)
+0.3.3 (2014-01-26)
+------------------
+
+- Adds interface to skip datatype checking
+
+
+0.3.2 (2014-01-23)
 ------------------
 
 - Raises exception when weird regex pattern is given
