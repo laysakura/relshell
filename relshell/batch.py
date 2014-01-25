@@ -13,7 +13,7 @@ from relshell.record import Record
 
 class Batch(object):
     """Set of records"""
-    def __init__(self, record_def, records):
+    def __init__(self, record_def, records, check_datatype=True):
         """Create an *immutable* batch of records
 
         :param record_def: instance of `RecordDef <#relshell.recorddef.RecordDef>`_
@@ -22,7 +22,8 @@ class Batch(object):
         :raises: `TypeError` when any record has mismatched type with :param:`record_def`
         """
         # check each record type
-        map(lambda r: Record._chk_type(record_def, r), records)
+        if check_datatype:
+            map(lambda r: Record._chk_type(record_def, r), records)
 
         self._rdef         = record_def
         self._records      = records
